@@ -1,17 +1,37 @@
 package org.example;
 
+import org.example.models.CurrencyExchange;
+import org.example.services.ExchangeRateService;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Scanner;
+
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.print("Enter currency code: ");
+            String currencyCode = scanner.next();
+
+            System.out.print("Enter date (optional, press ENTER for today's date): ");
+            scanner.nextLine();
+            String dateString = scanner.nextLine();
+            LocalDate date = dateString.isEmpty() ? LocalDate.now() : LocalDate.parse(dateString);
+
+//            CurrencyExchange currencyExchange = new CurrencyExchange(date, currencyCode, "", 0.0);
+
+            ExchangeRateService exchangeRateService = new ExchangeRateService();
+            CurrencyExchange exchangeRateResult = exchangeRateService.getExchangeRate(currencyCode, date.toString());
+
+            System.out.println("Exchange rate for " + currencyCode + " on " + date + ": " + exchangeRateResult);
+
+        } catch (DateTimeParseException e) {
+            System.out.println("Error during date parsing: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Another error: " + e.getMessage());
         }
     }
 }
