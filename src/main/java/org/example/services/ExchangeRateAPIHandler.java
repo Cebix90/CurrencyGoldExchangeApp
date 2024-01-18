@@ -2,7 +2,6 @@ package org.example.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.example.JSONMapper;
 import org.example.models.CurrencyExchange;
-import org.example.models.CurrencyRate;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -12,10 +11,14 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 
-public class EchangeRateAPIHandler {
-    final HttpClient client = HttpClient.newBuilder().build();
+public class ExchangeRateAPIHandler {
+    private final HttpClient client;
     private static final URI API_URL = URI.create("http://api.nbp.pl/api/exchangerates/");
     private final JSONMapper jsonMapper = new JSONMapper();
+
+    public ExchangeRateAPIHandler(HttpClient client) {
+        this.client = client;
+    }
 
     public CurrencyExchange getExchangeRateSingleCurrency(String currency, String date) throws Exception {
         if (date.isEmpty()) {

@@ -2,14 +2,15 @@ package org.example.services;
 
 import org.example.models.CurrencyExchange;
 
-public class ExchangeRateService {
-    private final EchangeRateAPIHandler echangeRateAPIHandler;
+import java.net.http.HttpClient;
 
+public class ExchangeRateService {
+    private final ExchangeRateAPIHandler exchangeRateAPIHandler;
     public ExchangeRateService() {
-        this.echangeRateAPIHandler = new EchangeRateAPIHandler();
+        this.exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
     }
 
     public CurrencyExchange getExchangeRate(String currency, String date) throws Exception {
-        return echangeRateAPIHandler.getExchangeRateSingleCurrency(currency, date);
+        return exchangeRateAPIHandler.getExchangeRateSingleCurrency(currency, date);
     }
 }
