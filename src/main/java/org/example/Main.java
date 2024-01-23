@@ -1,8 +1,9 @@
 package org.example;
 
+import org.example.handlers.ExchangeRateAPIHandler;
 import org.example.models.CurrencyExchange;
-import org.example.services.ExchangeRateService;
 
+import java.net.http.HttpClient;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
@@ -23,8 +24,8 @@ public class Main {
 
 //            CurrencyExchange currencyExchange = new CurrencyExchange(date, currencyCode, "", 0.0);
 
-            ExchangeRateService exchangeRateService = new ExchangeRateService();
-            CurrencyExchange exchangeRateResult = exchangeRateService.getExchangeRate(currencyCode, date.toString());
+            ExchangeRateAPIHandler exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
+            CurrencyExchange exchangeRateResult = exchangeRateAPIHandler.getExchangeRateSingleCurrency(currencyCode, date.toString());
 
             System.out.println("Exchange rate for " + currencyCode + " on " + date + ": " + exchangeRateResult);
 

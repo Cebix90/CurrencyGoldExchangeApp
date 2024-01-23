@@ -1,6 +1,6 @@
 import org.example.models.CurrencyExchange;
 import org.example.models.CurrencyRate;
-import org.example.services.ExchangeRateAPIHandler;
+import org.example.handlers.ExchangeRateAPIHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +34,7 @@ public class ExchangeRateAPIHandlerTest {
     }
 
     @Test
-    public void testGetExchangeRateSingleCurrency_ReturnsCorrectCurrencyExchange() throws Exception {
+    public void testGetExchangeRateSingleCurrency_ReturnsCorrectCurrencyExchange() {
         // Arrange
         String currency = "USD";
         String date = "2024-01-16";
@@ -51,6 +51,7 @@ public class ExchangeRateAPIHandlerTest {
                 "        }\n" +
                 "    ]\n" +
                 "}";
+
         CurrencyExchange expectedCurrencyExchange = new CurrencyExchange();
         expectedCurrencyExchange.setCode(currency);
         CurrencyRate rate = new CurrencyRate();
@@ -60,7 +61,11 @@ public class ExchangeRateAPIHandlerTest {
 
         when(response.body()).thenReturn(expectedResponse);
         when(response.statusCode()).thenReturn(200);
-        when(client.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
+        try {
+            when(client.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Act
         CurrencyExchange actualCurrencyExchange = handler.getExchangeRateSingleCurrency(currency, date);
@@ -69,7 +74,11 @@ public class ExchangeRateAPIHandlerTest {
         assertEquals(expectedCurrencyExchange.getCode(), actualCurrencyExchange.getCode());
         assertEquals(expectedCurrencyExchange.getRates().getFirst().getBuy(), actualCurrencyExchange.getRates().getFirst().getBuy());
         assertEquals(expectedCurrencyExchange.getRates().getFirst().getSell(), actualCurrencyExchange.getRates().getFirst().getSell());
-        verify(client, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+        try {
+            verify(client, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
