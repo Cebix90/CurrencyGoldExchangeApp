@@ -8,15 +8,15 @@ import org.example.models.CurrencyExchange;
 public class JSONMapper {
     ObjectMapper objectMapper = new ObjectMapper();
 
-    public CurrencyExchange mapToJava(String jsonStr) throws JsonProcessingException {
+    public CurrencyExchange deserializeJsonToCurrencyExchange(String jsonStr) throws JsonProcessingException {
         return objectMapper.readValue(jsonStr, CurrencyExchange.class);
     }
 
-    public <T> T mapToJava(String jsonStr, TypeReference<T> typeReference) throws JsonProcessingException {
-        return objectMapper.readValue(jsonStr, typeReference);
-    }
-
-    public String mapToJSON(CurrencyExchange currencyExchange) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(currencyExchange);
-    }
+//    public <T> T deserializeJsonToCurrencyExchange(String jsonStr, TypeReference<T> typeReference) throws JsonProcessingException {
+//        return objectMapper.readValue(jsonStr, typeReference);
+//    }
+//
+//    public String mapToJSON(CurrencyExchange currencyExchange) throws JsonProcessingException {
+//        return objectMapper.writeValueAsString(currencyExchange);
+//    }
 }
