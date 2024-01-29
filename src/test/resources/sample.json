@@ -1,0 +1,13 @@
+{
+  "table": "C",
+  "currency": "dolar amerykański",
+  "code": "USD",
+  "rates": [
+    {
+      "no": "011/C/NBP/2024",
+      "effectiveDate": "2024-01-16",
+      "bid": 3.9570,
+      "ask": 4.0370
+    }
+  ]
+}

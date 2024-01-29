@@ -1,16 +1,19 @@
-import org.example.models.CurrencyExchange;
-import org.example.models.CurrencyRate;
-import org.example.handlers.ExchangeRateAPIHandler;
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.io.IOUtils;
+import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
+import org.currencygoldexchangeapp.datamodels.CurrencyRate;
+import org.currencygoldexchangeapp.handlers.ExchangeRateAPIHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,31 +29,15 @@ public class ExchangeRateAPIHandlerTest {
     @Mock
     private HttpResponse<String> response;
 
+    @InjectMocks
     private ExchangeRateAPIHandler handler;
-
-    @BeforeEach
-    public void setup() {
-        handler = new ExchangeRateAPIHandler(client);
-    }
 
     @Test
     public void testGetExchangeRateSingleCurrency_ReturnsCorrectCurrencyExchange() {
         // Arrange
         String currency = "USD";
         String date = "2024-01-16";
-        String expectedResponse = "{\n" +
-                "    \"table\": \"C\",\n" +
-                "    \"currency\": \"dolar amerykański\",\n" +
-                "    \"code\": \"USD\",\n" +
-                "    \"rates\": [\n" +
-                "        {\n" +
-                "            \"no\": \"011/C/NBP/2024\",\n" +
-                "            \"effectiveDate\": \"2024-01-16\",\n" +
-                "            \"bid\": 3.9570,\n" +
-                "            \"ask\": 4.0370\n" +
-                "        }\n" +
-                "    ]\n" +
-                "}";
+        String expectedResponse = loadJsonFromFile("sample.json");
 
         CurrencyExchange expectedCurrencyExchange = new CurrencyExchange();
         expectedCurrencyExchange.setCode(currency);
@@ -62,10 +49,12 @@ public class ExchangeRateAPIHandlerTest {
         when(response.body()).thenReturn(expectedResponse);
         when(response.statusCode()).thenReturn(200);
         try {
-            when(client.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
+            when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString())))
+                    .thenReturn(response);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+
 
         // Act
         CurrencyExchange actualCurrencyExchange = handler.getExchangeRateSingleCurrency(currency, date);
@@ -75,7 +64,7 @@ public class ExchangeRateAPIHandlerTest {
         assertEquals(expectedCurrencyExchange.getRates().getFirst().getBuy(), actualCurrencyExchange.getRates().getFirst().getBuy());
         assertEquals(expectedCurrencyExchange.getRates().getFirst().getSell(), actualCurrencyExchange.getRates().getFirst().getSell());
         try {
-            verify(client, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+            verify(client, times(1)).send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()));
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -87,12 +76,10 @@ public class ExchangeRateAPIHandlerTest {
         String currency = "USD";
         String date = "2024-01-16";
 
-        when(client.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenThrow(new IOException("Failed to send request"));
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenThrow(new IOException("Failed to send request"));
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> {
-            handler.getExchangeRateSingleCurrency(currency, date);
-        });
+        assertThrows(RuntimeException.class, () -> handler.getExchangeRateSingleCurrency(currency, date));
     }
 
     @Test
@@ -102,12 +89,10 @@ public class ExchangeRateAPIHandlerTest {
         String date = "2024-01-16";
 
         when(response.statusCode()).thenReturn(201);
-        when(client.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(response);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> {
-            handler.getExchangeRateSingleCurrency(currency, date);
-        });
+        assertThrows(RuntimeException.class, () -> handler.getExchangeRateSingleCurrency(currency, date));
     }
 
     @Test
@@ -116,12 +101,10 @@ public class ExchangeRateAPIHandlerTest {
         String currency = "USD";
         String date = "2024-01-16";
 
-        when(client.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenThrow(IOException.class);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenThrow(IOException.class);
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> {
-            handler.getExchangeRateSingleCurrency(currency, date);
-        });
+        assertThrows(RuntimeException.class, () -> handler.getExchangeRateSingleCurrency(currency, date));
     }
 
     @Test
@@ -131,9 +114,7 @@ public class ExchangeRateAPIHandlerTest {
         String date = "2024-01-16";
 
         // Act and Assert
-        assertThrows(Exception.class, () -> {
-            handler.getExchangeRateSingleCurrency(currency, date);
-        });
+        assertThrows(Exception.class, () -> handler.getExchangeRateSingleCurrency(currency, date));
     }
 
     @Test
@@ -143,8 +124,36 @@ public class ExchangeRateAPIHandlerTest {
         String date = "";
 
         // Act and Assert
-        assertThrows(Exception.class, () -> {
-            handler.getExchangeRateSingleCurrency(currency, date);
-        });
+        assertThrows(Exception.class, () -> handler.getExchangeRateSingleCurrency(currency, date));
+    }
+
+    @Test
+    public void testGetExchangeRateSingleCurrency_WhenDateIsNull() {
+        // Arrange
+        String currency = "USD";
+
+        // Act and Assert
+        assertThrows(Exception.class, () -> handler.getExchangeRateSingleCurrency(currency, null));
+    }
+
+    @Test
+    public void testGetExchangeRateSingleCurrency_WhenCurrencyIsNull() {
+        // Arrange
+        String date = "2024-01-16";
+
+        // Act and Assert
+        assertThrows(Exception.class, () -> handler.getExchangeRateSingleCurrency(null, date));
+    }
+
+    private String loadJsonFromFile(String fileName) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            } else {
+                throw new IOException("Failed to load JSON file: " + fileName);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("An error occurred while loading JSON file", e);
+        }
     }
 }
