@@ -1,7 +1,9 @@
-package org.example.handlers;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.example.JSONMapper;
-import org.example.models.CurrencyExchange;
+package org.currencygoldexchangeapp.handlers;
+
+import org.currencygoldexchangeapp.constants.APIConstants;
+import org.currencygoldexchangeapp.constants.LoggerFactory;
+import org.currencygoldexchangeapp.utils.JSONMapper;
+import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -14,10 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ExchangeRateAPIHandler {
-    private static final Logger logger = Logger.getLogger(ExchangeRateAPIHandler.class.getName());
-
+    private static final Logger LOGGER = LoggerFactory.getLogger();
     private final HttpClient client;
-    private static final URI API_URL = URI.create("https://api.nbp.pl/api/exchangerates/");
     private final JSONMapper jsonMapper = new JSONMapper();
 
     public ExchangeRateAPIHandler(HttpClient client) {
@@ -30,7 +30,7 @@ public class ExchangeRateAPIHandler {
         }
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL + "rates/C/" + currency + "/" + date + "/"))
+                .uri(URI.create(APIConstants.EXCHANGE_RATE_API_URL + "rates/C/" + currency + "/" + date + "/"))
                 .GET()
                 .build();
 
@@ -43,25 +43,19 @@ public class ExchangeRateAPIHandler {
         try {
             return client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            logger.log(Level.SEVERE, "An error occurred while making the HTTP request.", e);
+            LOGGER.log(Level.SEVERE, "An error occurred while making the HTTP request.", e);
 
             throw new RuntimeException("An error occurred while making the HTTP request.", e);
         }
     }
 
     private CurrencyExchange handleHttpResponse(HttpResponse<String> response) {
-        try{
-            if (response.statusCode() == HttpURLConnection.HTTP_OK) {
-                System.out.println("Status code: " + response.statusCode());
-                System.out.println("Response Body:");
-                return jsonMapper.deserializeJsonToCurrencyExchange(response.body());
-            } else {
-                throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode());
-            }
-        } catch (JsonProcessingException e){
-            logger.log(Level.SEVERE, "An error occurred while processing the JSON response.", e);
-
-            throw new RuntimeException("An error occurred while processing the JSON response.", e);
+        if (response.statusCode() == HttpURLConnection.HTTP_OK) {
+            System.out.println("Status code: " + response.statusCode());
+            System.out.println("Response Body:");
+            return jsonMapper.deserializeJsonToCurrencyExchange(response.body());
+        } else {
+            throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode());
         }
     }
 }
