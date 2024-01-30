@@ -1,7 +1,6 @@
 package org.currencygoldexchangeapp.handlers;
 
 import org.currencygoldexchangeapp.constants.APIConstants;
-import org.currencygoldexchangeapp.constants.LoggerFactory;
 import org.currencygoldexchangeapp.utils.JSONMapper;
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 
@@ -16,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ExchangeRateAPIHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger();
+    private static final Logger LOGGER = Logger.getLogger(ExchangeRateAPIHandler.class.getName());
     private final HttpClient client;
     private final JSONMapper jsonMapper = new JSONMapper();
 
