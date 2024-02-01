@@ -42,8 +42,8 @@ public class ExchangeRateAPIHandlerTest {
         CurrencyExchange expectedCurrencyExchange = new CurrencyExchange();
         expectedCurrencyExchange.setCode(currency);
         CurrencyRate rate = new CurrencyRate();
-        rate.setBuy(3.9570);
-        rate.setSell(4.0370);
+        rate.setBid(3.9570);
+        rate.setAsk(4.0370);
         expectedCurrencyExchange.setRates(Collections.singletonList(rate));
 
         when(response.body()).thenReturn(expectedResponse);
@@ -61,8 +61,8 @@ public class ExchangeRateAPIHandlerTest {
 
         // Assert
         assertEquals(expectedCurrencyExchange.getCode(), actualCurrencyExchange.getCode());
-        assertEquals(expectedCurrencyExchange.getRates().getFirst().getBuy(), actualCurrencyExchange.getRates().getFirst().getBuy());
-        assertEquals(expectedCurrencyExchange.getRates().getFirst().getSell(), actualCurrencyExchange.getRates().getFirst().getSell());
+        assertEquals(expectedCurrencyExchange.getRates().getFirst().getBid(), actualCurrencyExchange.getRates().getFirst().getBid());
+        assertEquals(expectedCurrencyExchange.getRates().getFirst().getAsk(), actualCurrencyExchange.getRates().getFirst().getAsk());
         try {
             verify(client, times(1)).send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()));
         } catch (IOException | InterruptedException e) {

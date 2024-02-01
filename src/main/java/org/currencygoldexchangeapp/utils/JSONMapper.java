@@ -16,8 +16,8 @@ public class JSONMapper {
             currencyExchange = objectMapper.readValue(jsonStr, CurrencyExchange.class);
             List<CurrencyRate> currencyRates = currencyExchange.getRates();
             if (!currencyRates.isEmpty()) {
-                currencyExchange.setBid(currencyRates.getFirst().getBuy());
-                currencyExchange.setAsk(currencyRates.getFirst().getSell());
+                currencyExchange.setBid(currencyRates.getFirst().getBid());
+                currencyExchange.setAsk(currencyRates.getFirst().getAsk());
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
