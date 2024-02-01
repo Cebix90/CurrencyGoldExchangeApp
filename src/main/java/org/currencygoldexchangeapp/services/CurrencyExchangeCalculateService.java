@@ -3,6 +3,9 @@ package org.currencygoldexchangeapp.services;
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 import org.currencygoldexchangeapp.handlers.ExchangeRateAPIHandler;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class CurrencyExchangeCalculateService {
     private final ExchangeRateAPIHandler exchangeRateAPIHandler;
 
@@ -26,24 +29,30 @@ public class CurrencyExchangeCalculateService {
     }
 
     private CurrencyExchange calculateExchangeAmountForPLN(CurrencyExchange sourceCurrencyExchange, double amount) {
-        double askAmount = sourceCurrencyExchange.getAsk() * amount;
-        double bidAmount = sourceCurrencyExchange.getBid() * amount;
-        sourceCurrencyExchange.setAsk(askAmount);
-        sourceCurrencyExchange.setBid(bidAmount);
+        double askAmount = roundAmount(sourceCurrencyExchange.getAsk() * amount);
+        double bidAmount = roundAmount(sourceCurrencyExchange.getBid() * amount);
+
+        updateExchangeAmounts(sourceCurrencyExchange, askAmount, bidAmount);
+
         return sourceCurrencyExchange;
     }
 
     private CurrencyExchange calculateExchangeAmountForOtherCurrency(CurrencyExchange sourceCurrencyExchange, double amount, String targetCurrency, String date) {
         CurrencyExchange targetCurrencyExchange = exchangeRateAPIHandler.getExchangeRateSingleCurrency(targetCurrency, date);
-        double askAmount = sourceCurrencyExchange.getAsk() * amount / targetCurrencyExchange.getAsk();
-        double bidAmount = sourceCurrencyExchange.getBid() * amount / targetCurrencyExchange.getBid();
+        double askAmount = roundAmount(sourceCurrencyExchange.getAsk() * amount / targetCurrencyExchange.getAsk());
+        double bidAmount = roundAmount(sourceCurrencyExchange.getBid() * amount / targetCurrencyExchange.getBid());
 
-        askAmount = Math.round(askAmount * 10000.0) / 10000.0;
-        bidAmount = Math.round(bidAmount * 10000.0) / 10000.0;
-
-        sourceCurrencyExchange.setAsk(askAmount);
-        sourceCurrencyExchange.setBid(bidAmount);
+        updateExchangeAmounts(sourceCurrencyExchange, askAmount, bidAmount);
 
         return sourceCurrencyExchange;
+    }
+
+    private void updateExchangeAmounts(CurrencyExchange currencyExchange, double askAmount, double bidAmount) {
+        currencyExchange.setAsk(askAmount);
+        currencyExchange.setBid(bidAmount);
+    }
+    private double roundAmount(double amount) {
+        BigDecimal roundedAmount = new BigDecimal(amount).setScale(4, RoundingMode.HALF_UP);
+        return roundedAmount.doubleValue();
     }
 }
