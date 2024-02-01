@@ -2,7 +2,7 @@ package org.currencygoldexchangeapp;
 
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 import org.currencygoldexchangeapp.handlers.ExchangeRateAPIHandler;
-import org.currencygoldexchangeapp.services.CurrencyExchangeService;
+import org.currencygoldexchangeapp.services.CurrencyExchangeCalculateService;
 
 import java.net.http.HttpClient;
 import java.time.LocalDate;
@@ -30,10 +30,10 @@ public class Main {
             LocalDate date = dateString.isEmpty() ? LocalDate.now() : LocalDate.parse(dateString);
 
             ExchangeRateAPIHandler exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
-            CurrencyExchangeService currencyExchangeService = new CurrencyExchangeService(exchangeRateAPIHandler);
+            CurrencyExchangeCalculateService currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
 
             try {
-                CurrencyExchange result = currencyExchangeService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
+                CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
                 System.out.println("Result of currency exchange: " + result);
             } catch (Exception e) {
                 System.out.println("Error during currency exchange: " + e.getMessage());
