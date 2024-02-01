@@ -1,7 +1,7 @@
 package org.currencygoldexchangeapp.handlers;
 
 import org.currencygoldexchangeapp.constants.APIConstants;
-import org.currencygoldexchangeapp.services.CurrencyNotFoundException;
+import org.currencygoldexchangeapp.exceptions.CurrencyNotFoundException;
 import org.currencygoldexchangeapp.utils.JSONMapper;
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 
