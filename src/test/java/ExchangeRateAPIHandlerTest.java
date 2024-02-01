@@ -1,6 +1,7 @@
 import org.apache.commons.io.IOUtils;
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 import org.currencygoldexchangeapp.datamodels.CurrencyRate;
+import org.currencygoldexchangeapp.exceptions.CurrencyNotFoundException;
 import org.currencygoldexchangeapp.handlers.ExchangeRateAPIHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -143,6 +144,20 @@ public class ExchangeRateAPIHandlerTest {
 
         // Act and Assert
         assertThrows(Exception.class, () -> handler.getExchangeRateSingleCurrency(null, date));
+    }
+
+    @Test
+    public void testGetExchangeRateSingleCurrency_ThrowsCurrencyNotFoundExceptionOn404() throws Exception {
+        // Arrange
+        String currency = "USD";
+        String date = "2024-01-16";
+
+        HttpResponse<String> notFoundResponse = mock(HttpResponse.class);
+        when(notFoundResponse.statusCode()).thenReturn(404);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(notFoundResponse);
+
+        // Act and Assert
+        assertThrows(CurrencyNotFoundException.class, () -> handler.getExchangeRateSingleCurrency(currency, date));
     }
 
     private String loadJsonFromFile(String fileName) {
