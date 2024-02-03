@@ -1,6 +1,7 @@
 package org.currencygoldexchangeapp.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 import org.currencygoldexchangeapp.datamodels.CurrencyRate;
@@ -24,6 +25,17 @@ public class JSONMapper {
         }
         return currencyExchange;
     }
+
+    public List<CurrencyExchange> deserializeJsonToCurrencyExchangeList(String jsonStr) {
+        List<CurrencyExchange> currencyExchanges = null;
+        try {
+            currencyExchanges = objectMapper.readValue(jsonStr, new TypeReference<List<CurrencyExchange>>(){});
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return currencyExchanges;
+    }
+
 
 
 //    public <T> T deserializeJsonToCurrencyExchange(String jsonStr, TypeReference<T> typeReference) throws JsonProcessingException {
