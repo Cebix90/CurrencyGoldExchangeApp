@@ -9,6 +9,12 @@ public class CurrencyRate {
     @JsonProperty("effectiveDate")
     private String effectiveDate;
 
+    @JsonProperty("currency")
+    private String currency;
+
+    @JsonProperty("code")
+    private String code;
+
     @JsonProperty("bid")
     private double bid;
 
@@ -37,6 +43,22 @@ public class CurrencyRate {
 
     public void setAsk(double ask) {
         this.ask = ask;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
     @Override
