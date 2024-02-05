@@ -9,29 +9,23 @@ import org.currencygoldexchangeapp.services.CurrencyExchangeCalculateService;
 import java.net.http.HttpClient;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.print("Enter source currency code: ");
-            String sourceCurrencyCode = scanner.next();
+            LocalDate date = getDate(scanner);
 
-            System.out.print("Enter target currency code (press ENTER if not applicable): ");
-            scanner.nextLine();
-            String targetCurrencyCode = scanner.nextLine();
+            String sourceCurrencyCode = getUserInput(scanner, "Enter source currency code: ", date.toString(), true);
+
+            String targetCurrencyCode = getUserInput(scanner, "Enter target currency code (press ENTER if not applicable): ", date.toString(), false);
 
             double amount = getCustomAmount(scanner);
-
-            System.out.print("Enter date (optional, press ENTER for today's date): ");
-            String dateString = scanner.nextLine();
 
             ExchangeRateAPIHandler exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
             CurrencyExchangeCalculateService currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
 
             try {
-                LocalDate date = dateString.isEmpty() ? LocalDate.now() : LocalDate.parse(dateString);
                 CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
                 System.out.println("Result of currency exchange: " + result);
             } catch (DataNotFoundException e) {
@@ -47,30 +41,71 @@ public class Main {
         }
     }
 
+    private static LocalDate getDate(Scanner scanner) {
+        LocalDate date = null;
+
+        while (date == null) {
+            System.out.print("Enter date (optional, press ENTER for today's date): ");
+            String dateString = scanner.nextLine();
+
+            try {
+                date = dateString.isEmpty() ? LocalDate.now() : LocalDate.parse(dateString);
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Please enter a valid date in the format yyyy-MM-dd");
+            }
+        }
+        return date;
+    }
+
+    public static boolean isCurrencyAvailable(String currency, String date) {
+        List<String> codeCurrencyAvailableFor2011AndLater = Arrays.asList("USD", "AUD", "CAD", "EUR", "HUF", "CHF", "GBP", "JPY", "CZK", "DKK", "NOK", "SEK", "XDR");
+        List<String> codeCurrencyAvailableFor2010AndBefore = Arrays.asList("USD", "AUD", "CAD", "EUR", "HUF", "CHF", "GBP", "JPY", "CZK", "DKK", "EEK", "NOK", "SEK", "XDR");
+
+        int year = Integer.parseInt(date.substring(0, 4));
+
+        List<String> availableCurrencies;
+
+        if (year >= 2011) {
+            availableCurrencies = codeCurrencyAvailableFor2011AndLater;
+        } else if (year >= 2003) {
+            availableCurrencies = codeCurrencyAvailableFor2010AndBefore;
+        } else {
+            availableCurrencies = new ArrayList<>();
+        }
+
+        return availableCurrencies.stream()
+                .map(String::toLowerCase)
+                .toList()
+                .contains(currency.toLowerCase());
+    }
+
+    private static String getUserInput(Scanner scanner, String message, String date, boolean isSourceCurrency) {
+        String currencyCode;
+        do {
+            System.out.print(message);
+            currencyCode = scanner.nextLine();
+        } while ((!currencyCode.isEmpty() && !isCurrencyAvailable(currencyCode, date)) || (isSourceCurrency && currencyCode.isEmpty()));
+        return currencyCode;
+    }
+
     private static double getCustomAmount(Scanner scanner) {
-        System.out.print("Enter custom amount (or press ENTER for default 1): ");
         double amount = 1;
+        boolean validInput = false;
 
-        int maxAttempts = 3;
-        int attempts = 0;
-
-        while (attempts < maxAttempts) {
+        while (!validInput) {
+            System.out.print("Enter custom amount (or press ENTER for default 1): ");
             String userInput = scanner.nextLine().trim();
+
             if (!userInput.isEmpty()) {
                 try {
                     amount = Double.parseDouble(userInput);
-                    break;
+                    validInput = true;
                 } catch (NumberFormatException e) {
-                    attempts++;
-                    System.out.println("Invalid input. Please enter a valid number or press ENTER for default 1. " + (maxAttempts - attempts) + " attempts left");
+                    System.out.println("Invalid input. Please enter a valid number.");
                 }
             } else {
-                break;
+                validInput = true;
             }
-        }
-
-        if (attempts == maxAttempts) {
-            System.out.println("Exceeded maximum attempts. Using default value of 1.");
         }
 
         System.out.println("Selected amount: " + amount);
