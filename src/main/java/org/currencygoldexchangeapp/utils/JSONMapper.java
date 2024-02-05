@@ -26,18 +26,6 @@ public class JSONMapper {
         return currencyExchange;
     }
 
-    public List<CurrencyExchange> deserializeJsonToCurrencyExchangeList(String jsonStr) {
-        List<CurrencyExchange> currencyExchanges = null;
-        try {
-            currencyExchanges = objectMapper.readValue(jsonStr, new TypeReference<List<CurrencyExchange>>(){});
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return currencyExchanges;
-    }
-
-
-
 //    public <T> T deserializeJsonToCurrencyExchange(String jsonStr, TypeReference<T> typeReference) throws JsonProcessingException {
 //        return objectMapper.readValue(jsonStr, typeReference);
 //    }
