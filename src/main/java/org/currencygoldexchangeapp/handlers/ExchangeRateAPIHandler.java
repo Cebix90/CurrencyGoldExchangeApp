@@ -1,8 +1,9 @@
 package org.currencygoldexchangeapp.handlers;
 
 import org.currencygoldexchangeapp.constants.APIConstants;
-import org.currencygoldexchangeapp.utils.JSONMapper;
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
+import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
+import org.currencygoldexchangeapp.utils.JSONMapper;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -50,9 +51,9 @@ public class ExchangeRateAPIHandler {
 
     private CurrencyExchange handleHttpResponse(HttpResponse<String> response) {
         if (response.statusCode() == HttpURLConnection.HTTP_OK) {
-            System.out.println("Status code: " + response.statusCode());
-            System.out.println("Response Body:");
             return jsonMapper.deserializeJsonToCurrencyExchange(response.body());
+        } else if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+            throw new DataNotFoundException();
         } else {
             throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode());
         }

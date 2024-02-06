@@ -9,11 +9,17 @@ public class CurrencyRate {
     @JsonProperty("effectiveDate")
     private String effectiveDate;
 
+    @JsonProperty("currency")
+    private String currency;
+
+    @JsonProperty("code")
+    private String code;
+
     @JsonProperty("bid")
-    private double buy;
+    private double bid;
 
     @JsonProperty("ask")
-    private double sell;
+    private double ask;
 
     public String getEffectiveDate() {
         return effectiveDate;
@@ -23,25 +29,41 @@ public class CurrencyRate {
         this.effectiveDate = effectiveDate;
     }
 
-    public double getBuy() {
-        return buy;
+    public double getBid() {
+        return bid;
     }
 
-    public void setBuy(double buy) {
-        this.buy = buy;
+    public void setBid(double bid) {
+        this.bid = bid;
     }
 
-    public double getSell() {
-        return sell;
+    public double getAsk() {
+        return ask;
     }
 
-    public void setSell(double sell) {
-        this.sell = sell;
+    public void setAsk(double ask) {
+        this.ask = ask;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
     @Override
     public String toString() {
-        return  " Buy=" + buy +
-                ", Sell=" + sell + " ";
+        return  " Buy=" + bid +
+                ", Sell=" + ask + " ";
     }
 }

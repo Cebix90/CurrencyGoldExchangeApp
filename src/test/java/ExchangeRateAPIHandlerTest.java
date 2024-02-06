@@ -1,6 +1,7 @@
 import org.apache.commons.io.IOUtils;
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 import org.currencygoldexchangeapp.datamodels.CurrencyRate;
+import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
 import org.currencygoldexchangeapp.handlers.ExchangeRateAPIHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,32 +38,30 @@ public class ExchangeRateAPIHandlerTest {
         // Arrange
         String currency = "USD";
         String date = "2024-01-16";
-        String expectedResponse = loadJsonFromFile("sample.json");
+        String expectedResponse = loadJsonFromFile("single_currency_response.json");
 
         CurrencyExchange expectedCurrencyExchange = new CurrencyExchange();
         expectedCurrencyExchange.setCode(currency);
         CurrencyRate rate = new CurrencyRate();
-        rate.setBuy(3.9570);
-        rate.setSell(4.0370);
+        rate.setBid(3.9570);
+        rate.setAsk(4.0370);
         expectedCurrencyExchange.setRates(Collections.singletonList(rate));
 
         when(response.body()).thenReturn(expectedResponse);
         when(response.statusCode()).thenReturn(200);
         try {
-            when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString())))
-                    .thenReturn(response);
+            when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
-
 
         // Act
         CurrencyExchange actualCurrencyExchange = handler.getExchangeRateSingleCurrency(currency, date);
 
         // Assert
         assertEquals(expectedCurrencyExchange.getCode(), actualCurrencyExchange.getCode());
-        assertEquals(expectedCurrencyExchange.getRates().getFirst().getBuy(), actualCurrencyExchange.getRates().getFirst().getBuy());
-        assertEquals(expectedCurrencyExchange.getRates().getFirst().getSell(), actualCurrencyExchange.getRates().getFirst().getSell());
+        assertEquals(expectedCurrencyExchange.getRates().getFirst().getBid(), actualCurrencyExchange.getRates().getFirst().getBid());
+        assertEquals(expectedCurrencyExchange.getRates().getFirst().getAsk(), actualCurrencyExchange.getRates().getFirst().getAsk());
         try {
             verify(client, times(1)).send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()));
         } catch (IOException | InterruptedException e) {
@@ -143,6 +142,20 @@ public class ExchangeRateAPIHandlerTest {
 
         // Act and Assert
         assertThrows(Exception.class, () -> handler.getExchangeRateSingleCurrency(null, date));
+    }
+
+    @Test
+    public void testGetExchangeRateSingleCurrency_ThrowsCurrencyNotFoundExceptionOn404() throws Exception {
+        // Arrange
+        String currency = "USD";
+        String date = "2024-01-16";
+
+        HttpResponse<String> notFoundResponse = mock(HttpResponse.class);
+        when(notFoundResponse.statusCode()).thenReturn(404);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(notFoundResponse);
+
+        // Act and Assert
+        assertThrows(DataNotFoundException.class, () -> handler.getExchangeRateSingleCurrency(currency, date));
     }
 
     private String loadJsonFromFile(String fileName) {

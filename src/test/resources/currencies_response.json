@@ -1,0 +1,88 @@
+[
+  {
+    "table": "C",
+    "no": "011/C/NBP/2024",
+    "tradingDate": "2024-01-15",
+    "effectiveDate": "2024-01-16",
+    "rates": [
+      {
+        "currency": "dolar amerykański",
+        "code": "USD",
+        "bid": 3.9570,
+        "ask": 4.0370
+      },
+      {
+        "currency": "dolar australijski",
+        "code": "AUD",
+        "bid": 2.6328,
+        "ask": 2.6860
+      },
+      {
+        "currency": "dolar kanadyjski",
+        "code": "CAD",
+        "bid": 2.9453,
+        "ask": 3.0049
+      },
+      {
+        "currency": "euro",
+        "code": "EUR",
+        "bid": 4.3302,
+        "ask": 4.4176
+      },
+      {
+        "currency": "forint (Węgry)",
+        "code": "HUF",
+        "bid": 0.011419,
+        "ask": 0.011649
+      },
+      {
+        "currency": "frank szwajcarski",
+        "code": "CHF",
+        "bid": 4.6284,
+        "ask": 4.7220
+      },
+      {
+        "currency": "funt szterling",
+        "code": "GBP",
+        "bid": 5.0322,
+        "ask": 5.1338
+      },
+      {
+        "currency": "jen (Japonia)",
+        "code": "JPY",
+        "bid": 0.027125,
+        "ask": 0.027673
+      },
+      {
+        "currency": "korona czeska",
+        "code": "CZK",
+        "bid": 0.1753,
+        "ask": 0.1789
+      },
+      {
+        "currency": "korona duńska",
+        "code": "DKK",
+        "bid": 0.5805,
+        "ask": 0.5923
+      },
+      {
+        "currency": "korona norweska",
+        "code": "NOK",
+        "bid": 0.3828,
+        "ask": 0.3906
+      },
+      {
+        "currency": "korona szwedzka",
+        "code": "SEK",
+        "bid": 0.3840,
+        "ask": 0.3918
+      },
+      {
+        "currency": "SDR (MFW)",
+        "code": "XDR",
+        "bid": 5.2873,
+        "ask": 5.3941
+      }
+    ]
+  }
+]
