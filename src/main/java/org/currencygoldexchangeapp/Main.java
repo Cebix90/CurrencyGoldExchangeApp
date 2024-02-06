@@ -43,13 +43,28 @@ public class Main {
 
     private static LocalDate getDate(Scanner scanner) {
         LocalDate date = null;
+        LocalDate today = LocalDate.now();
 
         while (date == null) {
-            System.out.print("Enter date (optional, press ENTER for today's date): ");
+            System.out.print("Please enter a date within the range from 2003-01-01 to " + today + " (optional, press ENTER for today's date): ");
             String dateString = scanner.nextLine();
 
             try {
-                date = dateString.isEmpty() ? LocalDate.now() : LocalDate.parse(dateString);
+                if (dateString.isEmpty()) {
+                    date = LocalDate.now();
+                } else {
+                    date = LocalDate.parse(dateString);
+
+                    LocalDate minDate = LocalDate.of(2003, 1, 1);
+
+                    if (date.isAfter(today)) {
+                        System.out.println("Entered date is greater than today's date. Please enter a date within the range from 2003-01-01 to " + today + ".");
+                        date = null;
+                    } else if (date.isBefore(minDate)) {
+                        System.out.println("Entered date is earlier than the supported date range. Please enter a date within the range from 2003-01-01 to " + today + ".");
+                        date = null;
+                    }
+                }
             } catch (DateTimeParseException e) {
                 System.out.println("Invalid date format. Please enter a valid date in the format yyyy-MM-dd");
             }
