@@ -4,94 +4,59 @@ import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 import org.currencygoldexchangeapp.exceptions.CurrencyNotFoundException;
 import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
 import org.currencygoldexchangeapp.handlers.ExchangeRateAPIHandler;
+import org.currencygoldexchangeapp.handlers.ExchangeRateFileReaderHandler;
 import org.currencygoldexchangeapp.services.CurrencyExchangeCalculateService;
+import org.currencygoldexchangeapp.utils.InputValidator;
 
 import java.net.http.HttpClient;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.Map;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
-            LocalDate date = getDate(scanner);
+            System.out.println("Choose an option:");
+            System.out.println("1. Enter data manually");
+            System.out.println("2. Load data from a file");
 
-            String sourceCurrencyCode = getUserInput(scanner, "Enter source currency code: ", date.toString(), true);
-
-            String targetCurrencyCode = getUserInput(scanner, "Enter target currency code (press ENTER if not applicable): ", date.toString(), false);
-
-            double amount = getCustomAmount(scanner);
+            int option = scanner.nextInt();
+            scanner.nextLine();
 
             ExchangeRateAPIHandler exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
             CurrencyExchangeCalculateService currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
 
-            try {
-                CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
-                System.out.println("Result of currency exchange: " + result);
-            } catch (DataNotFoundException e) {
-                System.out.println(e.getMessage());
-            } catch (CurrencyNotFoundException e) {
-                System.out.println("Invalid currency entered: " + e.getMessage());
-            } catch (DateTimeParseException e) {
-                System.out.println("Invalid date entered, correct format yyyy-MM-dd");
-            }
+            if (option == 1) {
+                LocalDate date = InputValidator.getDate(scanner);
+                String sourceCurrencyCode = getUserInput(scanner, "Enter source currency code: ", date.toString(), true);
+                String targetCurrencyCode = getUserInput(scanner, "Enter target currency code (press ENTER if not applicable): ", date.toString(), false);
+                double amount = InputValidator.getCustomAmount(scanner);
 
-        } catch (Exception e) {
+                exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
+                currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
+
+                try {
+                    CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
+                    System.out.println("Result of currency exchange: " + result);
+                } catch (DataNotFoundException e) {
+                    System.out.println(e.getMessage());
+                } catch (CurrencyNotFoundException e) {
+                    System.out.println("Invalid currency code entered: " + e.getMessage());
+                } catch (DateTimeParseException e) {
+                    System.out.println("Invalid date entered. Correct format is yyyy-MM-dd");
+                }
+            } else if (option == 2) {
+                System.out.print("Enter the file path: ");
+                String filePath = scanner.nextLine();
+
+                displayResultsFromFile(filePath, currencyExchangeCalculateService);
+            } else {
+                System.out.println("Invalid option. Closing the program...");
+            }
+        } catch (Exception e) { // This will be solved, I know that general Exception is not a good idea
             System.out.println("Another error: " + e.getMessage());
         }
-    }
-
-    private static LocalDate getDate(Scanner scanner) {
-        LocalDate date = null;
-        LocalDate today = LocalDate.now();
-
-        while (date == null) {
-            System.out.print("Please enter a date within the range from 2003-01-01 to " + today + " (optional, press ENTER for today's date): ");
-            String dateString = scanner.nextLine();
-
-            try {
-                if (dateString.isEmpty()) {
-                    date = LocalDate.now();
-                } else {
-                    date = LocalDate.parse(dateString);
-
-                    LocalDate minDate = LocalDate.of(2003, 1, 1);
-
-                    if (date.isAfter(today)) {
-                        System.out.println("Entered date is greater than today's date. Please enter a date within the range from 2003-01-01 to " + today + ".");
-                        date = null;
-                    } else if (date.isBefore(minDate)) {
-                        System.out.println("Entered date is earlier than the supported date range. Please enter a date within the range from 2003-01-01 to " + today + ".");
-                        date = null;
-                    }
-                }
-            } catch (DateTimeParseException e) {
-                System.out.println("Invalid date format. Please enter a valid date in the format yyyy-MM-dd");
-            }
-        }
-        return date;
-    }
-
-    public static boolean isCurrencyAvailable(String currency, String date) {
-        List<String> codeCurrencyAvailableFor2011AndLater = Arrays.asList("USD", "AUD", "CAD", "EUR", "HUF", "CHF", "GBP", "JPY", "CZK", "DKK", "NOK", "SEK", "XDR");
-        List<String> codeCurrencyAvailableFor2010AndBefore = Arrays.asList("USD", "AUD", "CAD", "EUR", "HUF", "CHF", "GBP", "JPY", "CZK", "DKK", "EEK", "NOK", "SEK", "XDR");
-
-        int year = Integer.parseInt(date.substring(0, 4));
-
-        List<String> availableCurrencies;
-
-        if (year >= 2011) {
-            availableCurrencies = codeCurrencyAvailableFor2011AndLater;
-        } else if (year >= 2003) {
-            availableCurrencies = codeCurrencyAvailableFor2010AndBefore;
-        } else {
-            availableCurrencies = new ArrayList<>();
-        }
-
-        return availableCurrencies.stream()
-                .map(String::toLowerCase)
-                .toList()
-                .contains(currency.toLowerCase());
     }
 
     private static String getUserInput(Scanner scanner, String message, String date, boolean isSourceCurrency) {
@@ -99,31 +64,32 @@ public class Main {
         do {
             System.out.print(message);
             currencyCode = scanner.nextLine();
-        } while ((!currencyCode.isEmpty() && !isCurrencyAvailable(currencyCode, date)) || (isSourceCurrency && currencyCode.isEmpty()));
+
+            if ("PLN".equalsIgnoreCase(currencyCode) && !isSourceCurrency) {
+                return currencyCode;
+            }
+        } while ((!currencyCode.isEmpty() && !InputValidator.isCurrencyAvailable(currencyCode, date)) || (isSourceCurrency && currencyCode.isEmpty()));
         return currencyCode;
     }
 
-    private static double getCustomAmount(Scanner scanner) {
-        double amount = 1;
-        boolean validInput = false;
+    private static void displayResultsFromFile(String filePath, CurrencyExchangeCalculateService currencyExchangeCalculateService) {
+        ExchangeRateFileReaderHandler fileHandler = new ExchangeRateFileReaderHandler(filePath, currencyExchangeCalculateService);
+        Map<String, Double> exchangeRates = fileHandler.readExchangeRates();
 
-        while (!validInput) {
-            System.out.print("Enter custom amount (or press ENTER for default 1): ");
-            String userInput = scanner.nextLine().trim();
-
-            if (!userInput.isEmpty()) {
-                try {
-                    amount = Double.parseDouble(userInput);
-                    validInput = true;
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid input. Please enter a valid number.");
+        if(!fileHandler.readExchangeRates().isEmpty()) {
+            System.out.println("Results based on data from the file:");
+            for (Map.Entry<String, Double> entry : exchangeRates.entrySet()) {
+                if (entry.getValue() != 0.0) {
+                    System.out.println(entry.getKey() + ": " + entry.getValue());
                 }
-            } else {
-                validInput = true;
             }
         }
 
-        System.out.println("Selected amount: " + amount);
-        return amount;
+        if (!fileHandler.getErrorMessages().isEmpty()) {
+            System.out.println("Errors encountered while processing the file:");
+            for (String errorMessage : fileHandler.getErrorMessages()) {
+                System.out.println(errorMessage);
+            }
+        }
     }
 }
