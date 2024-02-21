@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-public class InputValidator {
+public class InputUtility {
     public static boolean isCurrencyAvailable(String currency, String date) {
         List<String> codeCurrencyAvailableFor2011AndLater = Arrays.asList("USD", "AUD", "CAD", "EUR", "HUF", "CHF", "GBP", "JPY", "CZK", "DKK", "NOK", "SEK", "XDR");
         List<String> codeCurrencyAvailableFor2010AndBefore = Arrays.asList("USD", "AUD", "CAD", "EUR", "HUF", "CHF", "GBP", "JPY", "CZK", "DKK", "EEK", "NOK", "SEK", "XDR");
