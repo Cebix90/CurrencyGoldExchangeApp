@@ -4,18 +4,17 @@ import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
 import org.currencygoldexchangeapp.exceptions.CurrencyNotFoundException;
 import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
 import org.currencygoldexchangeapp.services.CurrencyExchangeCalculateService;
-import org.currencygoldexchangeapp.utils.InputValidator;
+import org.currencygoldexchangeapp.utils.InputUtility;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ExchangeRateFileReaderHandler {
     private final String filePath;
@@ -30,16 +29,20 @@ public class ExchangeRateFileReaderHandler {
         this.exchangeRatesFromFile = new HashMap<>();
     }
 
-    public Map<String, Double> readExchangeRates() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+    public Map<String, Double> readExchangeRates() throws IOException {
+        Path filePath = Paths.get(this.filePath);
+
+        if (!java.nio.file.Files.exists(filePath)) {
+            throw new IOException("NonExistingFileError: The file does not exist: " + filePath);
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath.toFile()))) {
             if (!reader.ready()) {
-                recordError("EmptyFileError", "The file is empty: " + filePath);
-                return exchangeRatesFromFile;
+                throw new IOException("EmptyFileError: The file is empty: " + filePath);
             }
 
-            if (!filePath.toLowerCase().endsWith(".csv")) {
-                recordError("InvalidFileFormatError", "Invalid file format. Expected CSV file: " + filePath);
-                return exchangeRatesFromFile;
+            if (!filePath.toString().toLowerCase().endsWith(".csv")) {
+                throw new IOException("InvalidFileFormatError: Invalid file format. Expected CSV file: " + filePath);
             }
 
             String line;
@@ -51,18 +54,14 @@ public class ExchangeRateFileReaderHandler {
             }
 
             return exchangeRatesFromFile;
-        } catch (IOException e) {
-            handleFileReadError(e);
         }
-
-        return exchangeRatesFromFile;
     }
 
     public List<String> getErrorMessages() {
         return new ArrayList<>(errorMessages.values());
     }
 
-    private void processExchangeRateLine(String line, int lineNumber) {
+    private boolean processExchangeRateLine(String line, int lineNumber) {
         String[] parts = line.split(" ");
 
         if (parts.length == 4) {
@@ -73,31 +72,34 @@ public class ExchangeRateFileReaderHandler {
 
             double amount = parseAmount(amountAsString, line, lineNumber);
             if (amount < 0) {
-                return;
+                return false;
             }
 
             LocalDate date = parseDate(dateString, line, lineNumber);
             if (date == null) {
-                return;
+                return false;
             }
             String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
             sourceCurrency = validateSourceCurrency(line, lineNumber, sourceCurrency, formattedDate);
             if (sourceCurrency == null) {
-                return;
+                return false;
             }
 
             targetCurrency = validateTargetCurrency(line, lineNumber, targetCurrency, formattedDate);
             if (targetCurrency == null) {
-                return;
+                return false;
             }
 
             double exchangeRate = calculateExchangeRate(sourceCurrency, amount, targetCurrency, formattedDate, line);
+            // "_" + line  <- added, I have to check why its showing me result in different way
             String uniqueKey = sourceCurrency + "_" + parts[1] + "_" + targetCurrency + "_" + dateString;
 
             exchangeRatesFromFile.put(uniqueKey, exchangeRate);
+            return true;
         } else {
-            recordError("Invalid line format in the file at line " + lineNumber, "Invalid line format in the file: " + line);
+            recordError("Invalid line format in the file at line " + lineNumber, "Invalid line format in the file " + lineNumber + ": " + line);
+            return false;
         }
     }
 
@@ -111,7 +113,6 @@ public class ExchangeRateFileReaderHandler {
         }
     }
 
-
     private LocalDate parseDate(String dateString, String line, int lineNumber) {
         try {
             return LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd-MM-yy"));
@@ -122,7 +123,7 @@ public class ExchangeRateFileReaderHandler {
     }
 
     private String validateSourceCurrency(String line, int lineNumber, String sourceCurrency, String formattedDate) {
-        if (InputValidator.isCurrencyAvailable(sourceCurrency, formattedDate)) {
+        if (InputUtility.isCurrencyAvailable(sourceCurrency, formattedDate)) {
             return sourceCurrency;
         } else {
             String errorMessage = "Invalid source currency code in the file at line " + lineNumber + ": " + line;
@@ -132,17 +133,13 @@ public class ExchangeRateFileReaderHandler {
     }
 
     private String validateTargetCurrency(String line, int lineNumber, String targetCurrency, String formattedDate) {
-        if (InputValidator.isCurrencyAvailable(targetCurrency, formattedDate) || targetCurrency.equalsIgnoreCase("pln")) {
+        if (InputUtility.isCurrencyAvailable(targetCurrency, formattedDate) || targetCurrency.equalsIgnoreCase("pln")) {
             return targetCurrency;
         } else {
             String errorMessage = "Invalid target currency code in the file at line " + lineNumber + ": " + line;
             recordError("Invalid target currency code in the file at line " + lineNumber, errorMessage);
             return null;
         }
-    }
-
-    private void handleFileReadError(IOException e) {
-        recordError("FileReadError", "Error reading exchange rates from the CSV file: " + e.getMessage());
     }
 
     private void recordError(String errorKey, String errorMessage) {
