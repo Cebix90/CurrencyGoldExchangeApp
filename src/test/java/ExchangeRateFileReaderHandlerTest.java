@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -33,11 +34,16 @@ public class ExchangeRateFileReaderHandlerTest {
                 .thenReturn(createCurrencyExchange());
 
         // Act
-        Map<String, Double> exchangeRates = fileReaderHandler.readExchangeRates();
+        Map<String, Double> exchangeRates;
+        try {
+            exchangeRates = fileReaderHandler.readExchangeRates();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         // Assert
-        assertNotNull(exchangeRates);
-        assertFalse(exchangeRates.isEmpty());
+        assertNotNull(exchangeRates, "Exchange rates list shouldn't be null if file contains correct records.");
+        assertFalse(exchangeRates.isEmpty(), "Exchange rates list shouldn't be empty if file contains correct records.");
         assertTrue(exchangeRates.containsKey("USD_100_PLN_27-12-23"));
     }
 
@@ -53,15 +59,18 @@ public class ExchangeRateFileReaderHandlerTest {
                 .thenReturn(createCurrencyExchange());
 
         // Act
-        Map<String, Double> exchangeRates = fileReaderHandler.readExchangeRates();
+        Map<String, Double> exchangeRates;
+        try {
+            exchangeRates = fileReaderHandler.readExchangeRates();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         List<String> errorMessages = fileReaderHandler.getErrorMessages();
 
         // Assert
-        assertNotNull(exchangeRates);
-        assertFalse(errorMessages.isEmpty());
+        assertNotNull(exchangeRates, "Exchange rates list shouldn't be null if file contains any records (including invalid records).");
+        assertFalse(errorMessages.isEmpty(), "Error messages shouldn't be empty if file contains records with invalid source currency.");
         assertTrue(errorMessages.contains("Invalid source currency code in the file at line 8: SSS 100 CHF 12-02-24"));
-        assertTrue(errorMessages.contains("Invalid target currency code in the file at line 4: USD 100 KKK 09-02-24"));
-        assertTrue(errorMessages.contains("Invalid date format in the file at line 6: USD 100 JPY 109-02-24"));
     }
 
     @Test
@@ -76,12 +85,17 @@ public class ExchangeRateFileReaderHandlerTest {
                 .thenReturn(createCurrencyExchange());
 
         // Act
-        Map<String, Double> exchangeRates = fileReaderHandler.readExchangeRates();
+        Map<String, Double> exchangeRates;
+        try {
+            exchangeRates = fileReaderHandler.readExchangeRates();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         List<String> errorMessages = fileReaderHandler.getErrorMessages();
 
         // Assert
-        assertNotNull(exchangeRates);
-        assertFalse(errorMessages.isEmpty());
+        assertNotNull(exchangeRates, "Exchange rates list shouldn't be null if file contains any records (including invalid records).");
+        assertFalse(errorMessages.isEmpty(), "Error messages shouldn't be empty if file contains records with invalid target currency.");
         assertTrue(errorMessages.contains("Invalid target currency code in the file at line 4: USD 100 KKK 09-02-24"));
     }
 
@@ -97,12 +111,17 @@ public class ExchangeRateFileReaderHandlerTest {
                 .thenReturn(createCurrencyExchange());
 
         // Act
-        Map<String, Double> exchangeRates = fileReaderHandler.readExchangeRates();
+        Map<String, Double> exchangeRates;
+        try {
+            exchangeRates = fileReaderHandler.readExchangeRates();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         List<String> errorMessages = fileReaderHandler.getErrorMessages();
 
         // Assert
-        assertNotNull(exchangeRates);
-        assertFalse(errorMessages.isEmpty());
+        assertNotNull(exchangeRates, "Exchange rates list shouldn't be null if file contains any records (including invalid records).");
+        assertFalse(errorMessages.isEmpty(), "Error messages shouldn't be empty if file contains records with invalid date format.");
         assertTrue(errorMessages.contains("Invalid date format in the file at line 6: USD 100 JPY 109-02-24"));
     }
 
@@ -118,12 +137,18 @@ public class ExchangeRateFileReaderHandlerTest {
                 .thenReturn(createCurrencyExchange());
 
         // Act
-        Map<String, Double> exchangeRates = fileReaderHandler.readExchangeRates();
+        Map<String, Double> exchangeRates;
+        try {
+            exchangeRates = fileReaderHandler.readExchangeRates();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         List<String> errorMessages = fileReaderHandler.getErrorMessages();
 
         // Assert
-        assertNotNull(exchangeRates);
-        assertFalse(errorMessages.isEmpty());
+        assertNotNull(exchangeRates, "Exchange rates list shouldn't be null if file contains any records (including invalid records).");
+        assertFalse(errorMessages.isEmpty(), "Error messages shouldn't be empty if file contains records with invalid amount.");
         assertTrue(errorMessages.contains("Invalid amount in the file at line 9: USD SSS CHF 12-02-24"));
     }
 
@@ -134,16 +159,14 @@ public class ExchangeRateFileReaderHandlerTest {
         ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(pathToEmptyFile, mockCalculateService);
 
         // Act
-        Map<String, Double> exchangeRates = fileReaderHandler.readExchangeRates();
-        List<String> errorMessages = fileReaderHandler.getErrorMessages();
+        IOException exception = assertThrows(IOException.class, fileReaderHandler::readExchangeRates);
 
         // Assert
-        assertTrue(exchangeRates.isEmpty(), "Exchange rates should be empty for an empty file.");
-        assertFalse(errorMessages.isEmpty(), "Error messages should not be empty.");
-        assertEquals(1, errorMessages.size(), "Exactly one error message should be generated for an empty file.");
+        assertEquals(("EmptyFileError: The file is empty: " + pathToEmptyFile).replace("/", "\\"), exception.getMessage(),
+                "Exception message should match the expected message for an empty file.");
 
-        String expectedErrorMessage = "The file is empty: " + pathToEmptyFile;
-        assertTrue(errorMessages.contains(expectedErrorMessage), "Error message should contain the expected message for an empty file.");
+        List<String> errorMessages = fileReaderHandler.getErrorMessages();
+        assertTrue(errorMessages.isEmpty(), "Error messages should be empty for an empty file.");
     }
 
     @Test
@@ -153,14 +176,14 @@ public class ExchangeRateFileReaderHandlerTest {
         ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(nonExistingFilePath, mockCalculateService);
 
         // Act
-        Map<String, Double> exchangeRates = fileReaderHandler.readExchangeRates();
-        List<String> errorMessages = fileReaderHandler.getErrorMessages();
+        IOException exception = assertThrows(IOException.class, fileReaderHandler::readExchangeRates);
 
         // Assert
-        assertTrue(exchangeRates.isEmpty());
-        assertFalse(errorMessages.isEmpty());
-        assertTrue(errorMessages.contains("Error reading exchange rates from the CSV file: src/test/resources/nonExistingFile.csv (The system cannot find the file specified)".replace("/", "\\")));
+        assertEquals(("NonExistingFileError: The file does not exist: " + nonExistingFilePath).replace("/", "\\"), exception.getMessage(),
+                "Exception message should match the expected message for an empty file.");
 
+        List<String> errorMessages = fileReaderHandler.getErrorMessages();
+        assertTrue(errorMessages.isEmpty(), "Error messages should be empty for an empty file.");
     }
 
     @Test
@@ -170,13 +193,14 @@ public class ExchangeRateFileReaderHandlerTest {
         ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(pathToFileWithInvalidFormat, mockCalculateService);
 
         // Act
-        Map<String, Double> exchangeRates = fileReaderHandler.readExchangeRates();
-        List<String> errorMessages = fileReaderHandler.getErrorMessages();
+        IOException exception = assertThrows(IOException.class, fileReaderHandler::readExchangeRates);
 
         // Assert
-        assertTrue(exchangeRates.isEmpty());
-        assertFalse(errorMessages.isEmpty());
-        assertTrue(errorMessages.contains("Invalid file format. Expected CSV file: src/test/resources/fileWithInvalidFormat.txt"));
+        assertEquals(("InvalidFileFormatError: Invalid file format. Expected CSV file: " + pathToFileWithInvalidFormat).replace("/", "\\"), exception.getMessage(),
+                "Exception message should match the expected message for an invalid file format.");
+
+        List<String> errorMessages = fileReaderHandler.getErrorMessages();
+        assertTrue(errorMessages.isEmpty(), "Error messages should be empty for an invalid file format.");
     }
 
     private static CurrencyExchange createCurrencyExchange() {
