@@ -17,46 +17,48 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        try (Scanner scanner = new Scanner(System.in)) {
-            System.out.println("Choose an option:");
-            System.out.println("1. Enter data manually");
-            System.out.println("2. Load data from a file");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Choose an option:");
+        System.out.println("1. Enter data manually");
+        System.out.println("2. Load data from a file");
 
-            int option = scanner.nextInt();
-            scanner.nextLine();
+        var input = scanner.nextLine();
+        int option;
+        try {
+            option = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            System.out.println("Conversion error: " + e.getMessage());
+            option = -1;
+        }
 
-            ExchangeRateAPIHandler exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
-            CurrencyExchangeCalculateService currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
+        ExchangeRateAPIHandler exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
+        CurrencyExchangeCalculateService currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
 
-            if (option == 1) {
-                LocalDate date = InputUtility.getDate(scanner);
-                String sourceCurrencyCode = getUserInput(scanner, "Enter source currency code: ", date.toString(), true);
-                String targetCurrencyCode = getUserInput(scanner, "Enter target currency code (press ENTER if not applicable): ", date.toString(), false);
-                double amount = InputUtility.getCustomAmount(scanner);
+        if (option == 1) {
+            LocalDate date = InputUtility.getDate(scanner);
+            String sourceCurrencyCode = getUserInput(scanner, "Enter source currency code: ", date.toString(), true);
+            String targetCurrencyCode = getUserInput(scanner, "Enter target currency code (press ENTER for PLN currency): ", date.toString(), false);
+            double amount = InputUtility.getCustomAmount(scanner);
 
-                exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
-                currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
+            currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
 
-                try {
-                    CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
-                    System.out.println("Result of currency exchange: " + result);
-                } catch (DataNotFoundException e) {
-                    System.out.println(e.getMessage());
-                } catch (CurrencyNotFoundException e) {
-                    System.out.println("Invalid currency code entered: " + e.getMessage());
-                } catch (DateTimeParseException e) {
-                    System.out.println("Invalid date entered. Correct format is yyyy-MM-dd");
-                }
-            } else if (option == 2) {
-                System.out.print("Enter the file path: ");
-                String filePath = scanner.nextLine();
-
-                displayResultsFromFile(filePath, currencyExchangeCalculateService);
-            } else {
-                System.out.println("Invalid option. Closing the program...");
+            try {
+                CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
+                System.out.println("Result of currency exchange: " + result);
+            } catch (DataNotFoundException e) {
+                System.out.println(e.getMessage());
+            } catch (CurrencyNotFoundException e) {
+                System.out.println("Invalid currency code entered: " + e.getMessage());
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date entered. Correct format is yyyy-MM-dd");
             }
-        } catch (Exception e) { // This will be solved, I know that general Exception is not a good idea
-            System.out.println("Another error: " + e.getMessage());
+        } else if (option == 2) {
+            System.out.print("Enter the file path: ");
+            String filePath = scanner.nextLine();
+
+            displayResultsFromFile(filePath, currencyExchangeCalculateService);
+        } else {
+            System.out.println("Invalid option. Closing the program...");
         }
     }
 
@@ -75,8 +77,8 @@ public class Main {
 
     private static void displayResultsFromFile(String filePath, CurrencyExchangeCalculateService currencyExchangeCalculateService) {
         try {
-            ExchangeRateFileReaderHandler fileHandler = new ExchangeRateFileReaderHandler(filePath, currencyExchangeCalculateService);
-            Map<String, Double> exchangeRates = fileHandler.readExchangeRates();
+            ExchangeRateFileReaderHandler fileHandler = new ExchangeRateFileReaderHandler(currencyExchangeCalculateService);
+            Map<String, Double> exchangeRates = fileHandler.readExchangeRates(filePath);
 
             if (!exchangeRates.isEmpty()) {
                 System.out.println("Results based on data from the file:");
