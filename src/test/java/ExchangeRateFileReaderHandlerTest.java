@@ -28,7 +28,7 @@ public class ExchangeRateFileReaderHandlerTest {
         String pathToTheFile = "src/test/resources/test2.csv";
         mockCalculateService = mock(CurrencyExchangeCalculateService.class);
 
-        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(pathToTheFile, mockCalculateService);
+        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(mockCalculateService);
 
         when(mockCalculateService.calculateExchangeAmount(anyString(), anyDouble(), anyString(), anyString()))
                 .thenReturn(createCurrencyExchange());
@@ -36,7 +36,7 @@ public class ExchangeRateFileReaderHandlerTest {
         // Act
         Map<String, Double> exchangeRates;
         try {
-            exchangeRates = fileReaderHandler.readExchangeRates();
+            exchangeRates = fileReaderHandler.readExchangeRates(pathToTheFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -53,7 +53,7 @@ public class ExchangeRateFileReaderHandlerTest {
         String pathToTheFile = "src/test/resources/test2.csv";
         mockCalculateService = mock(CurrencyExchangeCalculateService.class);
 
-        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(pathToTheFile, mockCalculateService);
+        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(mockCalculateService);
 
         when(mockCalculateService.calculateExchangeAmount(anyString(), anyDouble(), anyString(), anyString()))
                 .thenReturn(createCurrencyExchange());
@@ -61,7 +61,7 @@ public class ExchangeRateFileReaderHandlerTest {
         // Act
         Map<String, Double> exchangeRates;
         try {
-            exchangeRates = fileReaderHandler.readExchangeRates();
+            exchangeRates = fileReaderHandler.readExchangeRates(pathToTheFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -79,7 +79,7 @@ public class ExchangeRateFileReaderHandlerTest {
         String pathToTheFile = "src/test/resources/test2.csv";
         mockCalculateService = mock(CurrencyExchangeCalculateService.class);
 
-        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(pathToTheFile, mockCalculateService);
+        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(mockCalculateService);
 
         when(mockCalculateService.calculateExchangeAmount(anyString(), anyDouble(), anyString(), anyString()))
                 .thenReturn(createCurrencyExchange());
@@ -87,7 +87,7 @@ public class ExchangeRateFileReaderHandlerTest {
         // Act
         Map<String, Double> exchangeRates;
         try {
-            exchangeRates = fileReaderHandler.readExchangeRates();
+            exchangeRates = fileReaderHandler.readExchangeRates(pathToTheFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -105,7 +105,7 @@ public class ExchangeRateFileReaderHandlerTest {
         String pathToTheFile = "src/test/resources/test2.csv";
         mockCalculateService = mock(CurrencyExchangeCalculateService.class);
 
-        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(pathToTheFile, mockCalculateService);
+        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(mockCalculateService);
 
         when(mockCalculateService.calculateExchangeAmount(anyString(), anyDouble(), anyString(), anyString()))
                 .thenReturn(createCurrencyExchange());
@@ -113,7 +113,7 @@ public class ExchangeRateFileReaderHandlerTest {
         // Act
         Map<String, Double> exchangeRates;
         try {
-            exchangeRates = fileReaderHandler.readExchangeRates();
+            exchangeRates = fileReaderHandler.readExchangeRates(pathToTheFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -131,7 +131,7 @@ public class ExchangeRateFileReaderHandlerTest {
         String pathToTheFile = "src/test/resources/test2.csv";
         mockCalculateService = mock(CurrencyExchangeCalculateService.class);
 
-        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(pathToTheFile, mockCalculateService);
+        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(mockCalculateService);
 
         when(mockCalculateService.calculateExchangeAmount(anyString(), anyDouble(), anyString(), anyString()))
                 .thenReturn(createCurrencyExchange());
@@ -139,7 +139,7 @@ public class ExchangeRateFileReaderHandlerTest {
         // Act
         Map<String, Double> exchangeRates;
         try {
-            exchangeRates = fileReaderHandler.readExchangeRates();
+            exchangeRates = fileReaderHandler.readExchangeRates(pathToTheFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -156,10 +156,10 @@ public class ExchangeRateFileReaderHandlerTest {
     public void readExchangeRates_withEmptyFile() {
         // Arrange
         String pathToEmptyFile = "src/test/resources/emptyFile.csv";
-        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(pathToEmptyFile, mockCalculateService);
+        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(mockCalculateService);
 
         // Act
-        IOException exception = assertThrows(IOException.class, fileReaderHandler::readExchangeRates);
+        IOException exception = assertThrows(IOException.class, () -> fileReaderHandler.readExchangeRates(pathToEmptyFile));
 
         // Assert
         assertEquals(("EmptyFileError: The file is empty: " + pathToEmptyFile).replace("/", "\\"), exception.getMessage(),
@@ -173,10 +173,10 @@ public class ExchangeRateFileReaderHandlerTest {
     public void readExchangeRates_withNonExistingFile() {
         // Arrange
         String nonExistingFilePath = "src/test/resources/nonExistingFile.csv";
-        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(nonExistingFilePath, mockCalculateService);
+        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(mockCalculateService);
 
         // Act
-        IOException exception = assertThrows(IOException.class, fileReaderHandler::readExchangeRates);
+        IOException exception = assertThrows(IOException.class, () -> fileReaderHandler.readExchangeRates(nonExistingFilePath));
 
         // Assert
         assertEquals(("NonExistingFileError: The file does not exist: " + nonExistingFilePath).replace("/", "\\"), exception.getMessage(),
@@ -190,10 +190,10 @@ public class ExchangeRateFileReaderHandlerTest {
     public void readExchangeRates_withInvalidFileFormat() {
         // Arrange
         String pathToFileWithInvalidFormat = "src/test/resources/fileWithInvalidFormat.txt";
-        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(pathToFileWithInvalidFormat, mockCalculateService);
+        ExchangeRateFileReaderHandler fileReaderHandler = new ExchangeRateFileReaderHandler(mockCalculateService);
 
         // Act
-        IOException exception = assertThrows(IOException.class, fileReaderHandler::readExchangeRates);
+        IOException exception = assertThrows(IOException.class, () -> fileReaderHandler.readExchangeRates(pathToFileWithInvalidFormat));
 
         // Assert
         assertEquals(("InvalidFileFormatError: Invalid file format. Expected CSV file: " + pathToFileWithInvalidFormat).replace("/", "\\"), exception.getMessage(),

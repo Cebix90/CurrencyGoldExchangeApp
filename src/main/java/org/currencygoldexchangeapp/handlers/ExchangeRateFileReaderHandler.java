@@ -17,20 +17,18 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class ExchangeRateFileReaderHandler {
-    private final String filePath;
     private final CurrencyExchangeCalculateService currencyExchangeCalculateService;
     private final Map<String, String> errorMessages;
     private final Map<String, Double> exchangeRatesFromFile;
 
-    public ExchangeRateFileReaderHandler(String filePath, CurrencyExchangeCalculateService currencyExchangeCalculateService) {
-        this.filePath = filePath;
+    public ExchangeRateFileReaderHandler(CurrencyExchangeCalculateService currencyExchangeCalculateService) {
         this.currencyExchangeCalculateService = currencyExchangeCalculateService;
         this.errorMessages = new HashMap<>();
         this.exchangeRatesFromFile = new HashMap<>();
     }
 
-    public Map<String, Double> readExchangeRates() throws IOException {
-        Path filePath = Paths.get(this.filePath);
+    public Map<String, Double> readExchangeRates(String fileToReadPath) throws IOException {
+        Path filePath = Paths.get(fileToReadPath);
 
         if (!java.nio.file.Files.exists(filePath)) {
             throw new IOException("NonExistingFileError: The file does not exist: " + filePath);
