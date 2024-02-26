@@ -2,7 +2,6 @@ package org.currencygoldexchangeapp.datamodels;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.currencygoldexchangeapp.datamodels.CurrencyRate;
 
 import java.util.List;
 
@@ -52,8 +51,6 @@ public class CurrencyExchange {
 
     @Override
     public String toString() {
-        return "code='" + code + '\'' +
-                ", buy=" + bid +
-                ", sell=" + ask;
+        return "bid=" + bid + ", ask=" + ask;
     }
 }

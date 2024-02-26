@@ -8,8 +8,11 @@ import org.currencygoldexchangeapp.handlers.ExchangeRateFileReaderHandler;
 import org.currencygoldexchangeapp.services.CurrencyExchangeCalculateService;
 import org.currencygoldexchangeapp.utils.InputUtility;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.http.HttpClient;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
@@ -38,13 +41,18 @@ public class Main {
             LocalDate date = InputUtility.getDate(scanner);
             String sourceCurrencyCode = getUserInput(scanner, "Enter source currency code: ", date.toString(), true);
             String targetCurrencyCode = getUserInput(scanner, "Enter target currency code (press ENTER for PLN currency): ", date.toString(), false);
+            if(targetCurrencyCode.isEmpty()) {
+                targetCurrencyCode = "PLN";
+            }
             double amount = InputUtility.getCustomAmount(scanner);
 
             currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
 
             try {
                 CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
-                System.out.println("Result of currency exchange: " + result);
+                System.out.println("Result of currency exchange: " + sourceCurrencyCode + " " + amount + " " + targetCurrencyCode + " " + date + ": " + result);
+
+                saveResultToCSV(sourceCurrencyCode, amount, targetCurrencyCode, date, result);
             } catch (DataNotFoundException e) {
                 System.out.println(e.getMessage());
             } catch (CurrencyNotFoundException e) {
@@ -66,7 +74,7 @@ public class Main {
         String currencyCode;
         do {
             System.out.print(message);
-            currencyCode = scanner.nextLine();
+            currencyCode = scanner.nextLine().toUpperCase();
 
             if ("PLN".equalsIgnoreCase(currencyCode) && !isSourceCurrency) {
                 return currencyCode;
@@ -99,4 +107,21 @@ public class Main {
             System.err.println("An error occurred while reading exchange rates from the CSV file: " + e.getMessage());
         }
     }
+
+    private static void saveResultToCSV(String sourceCurrencyCode, double amount, String targetCurrencyCode, LocalDate date, CurrencyExchange result) {
+        String filePath = "resultQueryToAPI.csv";
+        try (FileWriter fileWriter = new FileWriter(filePath, true);
+             BufferedWriter writer = new BufferedWriter(fileWriter)) {
+
+            if (!java.nio.file.Files.exists(Paths.get(filePath)) || java.nio.file.Files.size(Paths.get(filePath)) == 0) {
+                writer.write("SourceCurrency Amount TargetCurrency Date Bid Ask\n");
+            }
+
+            String csvLine = String.format("%s %.2f %s %s %.4f %.4f\n", sourceCurrencyCode, amount, targetCurrencyCode, date, result.getBid(), result.getAsk());
+            writer.write(csvLine);
+        } catch (IOException e) {
+            System.err.println("An error occurred while saving results to CSV file: " + e.getMessage());
+        }
+    }
+
 }
