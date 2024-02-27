@@ -5,14 +5,13 @@ import org.currencygoldexchangeapp.exceptions.CurrencyNotFoundException;
 import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
 import org.currencygoldexchangeapp.handlers.ExchangeRateAPIHandler;
 import org.currencygoldexchangeapp.handlers.ExchangeRateFileReaderHandler;
+import org.currencygoldexchangeapp.handlers.ExchangeRateFileSaverHandler;
 import org.currencygoldexchangeapp.services.CurrencyExchangeCalculateService;
 import org.currencygoldexchangeapp.utils.InputUtility;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.http.HttpClient;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
@@ -52,7 +51,13 @@ public class Main {
                 CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
                 System.out.println("Result of currency exchange: " + sourceCurrencyCode + " " + amount + " " + targetCurrencyCode + " " + date + ": " + result);
 
-                saveResultToCSV(sourceCurrencyCode, amount, targetCurrencyCode, date, result);
+                ExchangeRateFileSaverHandler exchangeRateFileSaverHandler = new ExchangeRateFileSaverHandler();
+
+                boolean resultToCSV = exchangeRateFileSaverHandler.saveResultToCSV(Path.of("savedFiles"), sourceCurrencyCode, amount, targetCurrencyCode, date, result);
+                if (resultToCSV) {
+                    System.out.println("Results saved to CSV file successfully.");
+                }
+
             } catch (DataNotFoundException e) {
                 System.out.println(e.getMessage());
             } catch (CurrencyNotFoundException e) {
@@ -107,21 +112,4 @@ public class Main {
             System.err.println("An error occurred while reading exchange rates from the CSV file: " + e.getMessage());
         }
     }
-
-    private static void saveResultToCSV(String sourceCurrencyCode, double amount, String targetCurrencyCode, LocalDate date, CurrencyExchange result) {
-        String filePath = "resultQueryToAPI.csv";
-        try (FileWriter fileWriter = new FileWriter(filePath, true);
-             BufferedWriter writer = new BufferedWriter(fileWriter)) {
-
-            if (!java.nio.file.Files.exists(Paths.get(filePath)) || java.nio.file.Files.size(Paths.get(filePath)) == 0) {
-                writer.write("SourceCurrency Amount TargetCurrency Date Bid Ask\n");
-            }
-
-            String csvLine = String.format("%s %.2f %s %s %.4f %.4f\n", sourceCurrencyCode, amount, targetCurrencyCode, date, result.getBid(), result.getAsk());
-            writer.write(csvLine);
-        } catch (IOException e) {
-            System.err.println("An error occurred while saving results to CSV file: " + e.getMessage());
-        }
-    }
-
 }
