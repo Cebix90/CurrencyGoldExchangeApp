@@ -73,10 +73,14 @@ public class ExchangeRateFileReaderHandler {
                 return false;
             }
 
-            LocalDate date = parseDate(dateString, line, lineNumber);
-            if (date == null) {
+            Optional<LocalDate> parsedDateOptional = parseDate(dateString, line, lineNumber);
+            LocalDate date;
+            if (parsedDateOptional.isPresent()) {
+                date = parsedDateOptional.get();
+            } else {
                 return false;
             }
+
             String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
             sourceCurrency = validateSourceCurrency(line, lineNumber, sourceCurrency, formattedDate);
@@ -111,12 +115,12 @@ public class ExchangeRateFileReaderHandler {
         }
     }
 
-    private LocalDate parseDate(String dateString, String line, int lineNumber) {
+    private Optional<LocalDate> parseDate(String dateString, String line, int lineNumber) {
         try {
-            return LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd-MM-yy"));
+            return Optional.of(LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd-MM-yy")));
         } catch (DateTimeParseException e) {
             recordError("Invalid date format in the file at line " + lineNumber, "Invalid date format in the file at line " + lineNumber + ": " + line);
-            return null;
+            return Optional.empty();
         }
     }
 
