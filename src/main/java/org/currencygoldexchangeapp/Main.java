@@ -1,11 +1,13 @@
 package org.currencygoldexchangeapp;
 
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
+import org.currencygoldexchangeapp.datamodels.GoldValue;
 import org.currencygoldexchangeapp.exceptions.CurrencyNotFoundException;
 import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
 import org.currencygoldexchangeapp.handlers.ExchangeRateAPIHandler;
 import org.currencygoldexchangeapp.handlers.ExchangeRateFileReaderHandler;
 import org.currencygoldexchangeapp.handlers.ExchangeRateFileSaverHandler;
+import org.currencygoldexchangeapp.handlers.GoldValueAPIHandler;
 import org.currencygoldexchangeapp.services.CurrencyExchangeCalculateService;
 import org.currencygoldexchangeapp.utils.InputUtility;
 
@@ -23,6 +25,8 @@ public class Main {
         System.out.println("Choose an option:");
         System.out.println("1. Enter data manually");
         System.out.println("2. Load data from a file");
+        System.out.println("3. Check gold price");
+
 
         var input = scanner.nextLine();
         int option;
@@ -70,6 +74,13 @@ public class Main {
             String filePath = scanner.nextLine();
 
             displayResultsFromFile(filePath, currencyExchangeCalculateService);
+        } else if (option == 3) {
+            LocalDate goldDate = InputUtility.getDate(scanner);
+
+            GoldValueAPIHandler goldValueAPIHandler = new GoldValueAPIHandler(HttpClient.newHttpClient());
+            GoldValue goldValue = goldValueAPIHandler.getGoldValueForSpecificDate(goldDate.toString());
+
+            System.out.println("Gold value on " + goldDate + ": " + goldValue.getValue());
         } else {
             System.out.println("Invalid option. Closing the program...");
         }
