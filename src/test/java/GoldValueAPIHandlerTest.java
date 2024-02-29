@@ -74,11 +74,107 @@ public class GoldValueAPIHandlerTest {
     }
 
     @Test
-    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIsNotOk() throws Exception {
+    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIs201() throws Exception {
         // Arrange
         String date = "2024-02-29";
 
         when(response.statusCode()).thenReturn(201);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
+
+        // Act and Assert
+        assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+    }
+
+    @Test
+    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIs400() throws Exception {
+        // Arrange
+        String date = "2024-02-29";
+
+        when(response.statusCode()).thenReturn(400);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
+
+        // Act and Assert
+        assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+    }
+
+    @Test
+    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIs401() throws Exception {
+        // Arrange
+        String date = "2024-02-29";
+
+        when(response.statusCode()).thenReturn(401);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
+
+        // Act and Assert
+        assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+    }
+
+    @Test
+    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIs403() throws Exception {
+        // Arrange
+        String date = "2024-02-29";
+
+        when(response.statusCode()).thenReturn(403);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
+
+        // Act and Assert
+        assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+    }
+
+    @Test
+    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIs404() throws Exception {
+        // Arrange
+        String date = "2024-02-29";
+
+        when(response.statusCode()).thenReturn(404);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
+
+        // Act and Assert
+        assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+    }
+
+    @Test
+    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIs408() throws Exception {
+        // Arrange
+        String date = "2024-02-29";
+
+        when(response.statusCode()).thenReturn(408);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
+
+        // Act and Assert
+        assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+    }
+
+    @Test
+    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIs500() throws Exception {
+        // Arrange
+        String date = "2024-02-29";
+
+        when(response.statusCode()).thenReturn(500);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
+
+        // Act and Assert
+        assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+    }
+
+    @Test
+    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIs503() throws Exception {
+        // Arrange
+        String date = "2024-02-29";
+
+        when(response.statusCode()).thenReturn(503);
+        when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
+
+        // Act and Assert
+        assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+    }
+
+    @Test
+    public void testGetGoldValueForSpecificDate_ThrowsRuntimeException_WhenHttpResponseIs504() throws Exception {
+        // Arrange
+        String date = "2024-02-29";
+
+        when(response.statusCode()).thenReturn(504);
         when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
         // Act and Assert
