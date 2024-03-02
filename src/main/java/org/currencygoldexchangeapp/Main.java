@@ -24,7 +24,7 @@ public class Main {
         System.out.println("1. Enter data manually");
         System.out.println("2. Load data from a file");
 
-        var input = scanner.nextLine();
+        String input = scanner.nextLine();
         int option;
         try {
             option = Integer.parseInt(input);

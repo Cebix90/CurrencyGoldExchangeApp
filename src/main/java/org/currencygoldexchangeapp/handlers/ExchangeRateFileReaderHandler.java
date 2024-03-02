@@ -20,6 +20,7 @@ public class ExchangeRateFileReaderHandler {
     private final CurrencyExchangeCalculateService currencyExchangeCalculateService;
     private final Map<String, String> errorMessages;
     private final Map<String, Double> exchangeRatesFromFile;
+    private String errorReason;
 
     public ExchangeRateFileReaderHandler(CurrencyExchangeCalculateService currencyExchangeCalculateService) {
         this.currencyExchangeCalculateService = currencyExchangeCalculateService;
@@ -48,7 +49,10 @@ public class ExchangeRateFileReaderHandler {
 
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                processExchangeRateLine(line, lineNumber);
+                boolean isLineProcessed = processExchangeRateLine(line);
+                if (!isLineProcessed) {
+                    recordError(errorReason, lineNumber, line);
+                }
             }
 
             return exchangeRatesFromFile;
@@ -59,7 +63,7 @@ public class ExchangeRateFileReaderHandler {
         return new ArrayList<>(errorMessages.values());
     }
 
-    private boolean processExchangeRateLine(String line, int lineNumber) {
+    private boolean processExchangeRateLine(String line) {
         String[] parts = line.split(" ");
 
         if (parts.length == 4) {
@@ -68,92 +72,97 @@ public class ExchangeRateFileReaderHandler {
             String targetCurrency = parts[2].trim();
             String dateString = parts[3];
 
-            double amount = parseAmount(amountAsString, line, lineNumber);
-            if (amount < 0) {
-                return false;
-            }
-
-            Optional<LocalDate> parsedDateOptional = parseDate(dateString, line, lineNumber);
-            LocalDate date;
-            if (parsedDateOptional.isPresent()) {
-                date = parsedDateOptional.get();
+            Optional<Double> parsedAmountOptional = parseAmount(amountAsString);
+            double amount;
+            if (parsedAmountOptional.isPresent() && parsedAmountOptional.get() > 0) {
+                amount = parsedAmountOptional.get();
             } else {
+                errorReason = "Invalid amount";
                 return false;
             }
 
+            if (!isValidDateFormat(dateString)) {
+                errorReason = "Invalid date format";
+                return false;
+            }
+
+            LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd-MM-yy"));
             String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-            sourceCurrency = validateSourceCurrency(line, lineNumber, sourceCurrency, formattedDate);
-            if (sourceCurrency == null) {
+            Optional<String> validatedSourceCurrencyOptional = validateSourceCurrency(sourceCurrency, formattedDate);
+            if(validatedSourceCurrencyOptional.isPresent()){
+                sourceCurrency = validatedSourceCurrencyOptional.get();
+            } else {
+                errorReason = "Invalid source currency code";
                 return false;
             }
 
-            targetCurrency = validateTargetCurrency(line, lineNumber, targetCurrency, formattedDate);
-            if (targetCurrency == null) {
+            Optional<String> validatedTargetCurrencyOptional = validateTargetCurrency(targetCurrency, formattedDate);
+            if (validatedTargetCurrencyOptional.isPresent()) {
+                targetCurrency = validatedTargetCurrencyOptional.get();
+            } else {
+                errorReason = "Invalid target currency code";
                 return false;
             }
 
-            double exchangeRate = calculateExchangeRate(sourceCurrency, amount, targetCurrency, formattedDate, line);
+            double exchangeRate = calculateExchangeRate(sourceCurrency, amount, targetCurrency, formattedDate);
             // "_" + line  <- added, I have to check why its showing me result in different way
             String uniqueKey = sourceCurrency + "_" + parts[1] + "_" + targetCurrency + "_" + dateString;
 
             exchangeRatesFromFile.put(uniqueKey, exchangeRate);
             return true;
         } else {
-            recordError("Invalid line format in the file at line " + lineNumber, "Invalid line format in the file " + lineNumber + ": " + line);
+            errorReason = "Invalid line format";
             return false;
         }
     }
 
-    private double parseAmount(String amountString, String line, int lineNumber) {
+    private Optional<Double> parseAmount(String amountString) {
         try {
-            return Double.parseDouble(amountString.trim());
+            return Optional.of(Double.parseDouble(amountString.trim()));
         } catch (NumberFormatException e) {
-            String errorKey = "Invalid amount in the file at line " + lineNumber;
-            recordError(errorKey, "Invalid amount in the file at line " + lineNumber + ": " + line);
-            return -1;
-        }
-    }
-
-    private Optional<LocalDate> parseDate(String dateString, String line, int lineNumber) {
-        try {
-            return Optional.of(LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd-MM-yy")));
-        } catch (DateTimeParseException e) {
-            recordError("Invalid date format in the file at line " + lineNumber, "Invalid date format in the file at line " + lineNumber + ": " + line);
             return Optional.empty();
         }
     }
 
-    private String validateSourceCurrency(String line, int lineNumber, String sourceCurrency, String formattedDate) {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private boolean isValidDateFormat(String dateString) {
+        try {
+            LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd-MM-yy"));
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
+    private Optional<String> validateSourceCurrency(String sourceCurrency, String formattedDate) {
         if (InputUtility.isCurrencyAvailable(sourceCurrency, formattedDate)) {
-            return sourceCurrency;
+            return Optional.of(sourceCurrency);
         } else {
-            String errorMessage = "Invalid source currency code in the file at line " + lineNumber + ": " + line;
-            recordError("Invalid source currency code in the file at line " + lineNumber, errorMessage);
-            return null;
+            return Optional.empty();
         }
     }
 
-    private String validateTargetCurrency(String line, int lineNumber, String targetCurrency, String formattedDate) {
+    private Optional<String> validateTargetCurrency(String targetCurrency, String formattedDate) {
         if (InputUtility.isCurrencyAvailable(targetCurrency, formattedDate) || targetCurrency.equalsIgnoreCase("pln")) {
-            return targetCurrency;
+            return Optional.of(targetCurrency);
         } else {
-            String errorMessage = "Invalid target currency code in the file at line " + lineNumber + ": " + line;
-            recordError("Invalid target currency code in the file at line " + lineNumber, errorMessage);
-            return null;
+            return Optional.empty();
         }
     }
 
-    private void recordError(String errorKey, String errorMessage) {
+    private void recordError(String errorReason, int lineNumber, String line) {
+        String errorKey = errorReason + " in the file at line " + lineNumber;
+        String errorMessage = errorKey + ": " + line;
         errorMessages.put(errorKey, errorMessage);
     }
 
-    private double calculateExchangeRate(String sourceCurrency, double amount, String targetCurrency, String date, String line) {
+    private double calculateExchangeRate(String sourceCurrency, double amount, String targetCurrency, String date) {
         try {
             CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrency, amount, targetCurrency, date);
             return result.getAsk();
         } catch (DataNotFoundException | CurrencyNotFoundException e) {
-            recordError("ExchangeRateCalculationError at line", e.getMessage() + ": " + line);
+            errorReason = "ExchangeRateCalculationError (" + e.getMessage() + ")";
         }
 
         return 0.0;
