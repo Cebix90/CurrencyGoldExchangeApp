@@ -1,15 +1,19 @@
 package org.currencygoldexchangeapp;
 
 import org.currencygoldexchangeapp.datamodels.CurrencyExchange;
+import org.currencygoldexchangeapp.datamodels.GoldValue;
 import org.currencygoldexchangeapp.exceptions.CurrencyNotFoundException;
 import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
 import org.currencygoldexchangeapp.handlers.ExchangeRateAPIHandler;
 import org.currencygoldexchangeapp.handlers.ExchangeRateFileReaderHandler;
+import org.currencygoldexchangeapp.handlers.ExchangeRateFileSaverHandler;
+import org.currencygoldexchangeapp.handlers.GoldValueAPIHandler;
 import org.currencygoldexchangeapp.services.CurrencyExchangeCalculateService;
 import org.currencygoldexchangeapp.utils.InputUtility;
 
 import java.io.IOException;
 import java.net.http.HttpClient;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
@@ -21,6 +25,8 @@ public class Main {
         System.out.println("Choose an option:");
         System.out.println("1. Enter data manually");
         System.out.println("2. Load data from a file");
+        System.out.println("3. Check gold price");
+
 
         var input = scanner.nextLine();
         int option;
@@ -38,13 +44,24 @@ public class Main {
             LocalDate date = InputUtility.getDate(scanner);
             String sourceCurrencyCode = getUserInput(scanner, "Enter source currency code: ", date.toString(), true);
             String targetCurrencyCode = getUserInput(scanner, "Enter target currency code (press ENTER for PLN currency): ", date.toString(), false);
+            if(targetCurrencyCode.isEmpty()) {
+                targetCurrencyCode = "PLN";
+            }
             double amount = InputUtility.getCustomAmount(scanner);
 
             currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
 
             try {
                 CurrencyExchange result = currencyExchangeCalculateService.calculateExchangeAmount(sourceCurrencyCode, amount, targetCurrencyCode, date.toString());
-                System.out.println("Result of currency exchange: " + result);
+                System.out.println("Result of currency exchange: " + sourceCurrencyCode + " " + amount + " " + targetCurrencyCode + " " + date + ": " + result);
+
+                ExchangeRateFileSaverHandler exchangeRateFileSaverHandler = new ExchangeRateFileSaverHandler();
+
+                boolean resultToCSV = exchangeRateFileSaverHandler.saveResultToCSV(Path.of("savedFiles"), sourceCurrencyCode, amount, targetCurrencyCode, date, result);
+                if (resultToCSV) {
+                    System.out.println("Results saved to CSV file successfully.");
+                }
+
             } catch (DataNotFoundException e) {
                 System.out.println(e.getMessage());
             } catch (CurrencyNotFoundException e) {
@@ -57,6 +74,13 @@ public class Main {
             String filePath = scanner.nextLine();
 
             displayResultsFromFile(filePath, currencyExchangeCalculateService);
+        } else if (option == 3) {
+            LocalDate goldDate = InputUtility.getDate(scanner);
+
+            GoldValueAPIHandler goldValueAPIHandler = new GoldValueAPIHandler(HttpClient.newHttpClient());
+            GoldValue goldValue = goldValueAPIHandler.getGoldValueForSpecificDate(goldDate.toString());
+
+            System.out.println("Gold value on " + goldDate + ": " + goldValue.getValue());
         } else {
             System.out.println("Invalid option. Closing the program...");
         }
@@ -66,7 +90,7 @@ public class Main {
         String currencyCode;
         do {
             System.out.print(message);
-            currencyCode = scanner.nextLine();
+            currencyCode = scanner.nextLine().toUpperCase();
 
             if ("PLN".equalsIgnoreCase(currencyCode) && !isSourceCurrency) {
                 return currencyCode;
