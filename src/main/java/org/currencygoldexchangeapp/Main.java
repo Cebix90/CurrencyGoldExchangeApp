@@ -28,7 +28,7 @@ public class Main {
         System.out.println("3. Check gold price");
 
 
-        var input = scanner.nextLine();
+        String input = scanner.nextLine();
         int option;
         try {
             option = Integer.parseInt(input);
