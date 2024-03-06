@@ -3,6 +3,7 @@ package org.currencygoldexchangeapp.handlers;
 import org.currencygoldexchangeapp.constants.APIConstants;
 import org.currencygoldexchangeapp.datamodels.GoldValue;
 import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
+import org.currencygoldexchangeapp.exceptions.ExceededResultsLimitException;
 import org.currencygoldexchangeapp.utils.JSONMapper;
 
 import java.io.IOException;
@@ -26,6 +27,10 @@ public class GoldValueAPIHandler {
     }
 
     public GoldValue getGoldValueForSpecificDate(String date) {
+        if(date == null){
+            throw new DataNotFoundException();
+        }
+
         if (date.isEmpty()) {
             date = LocalDate.now().toString();
         }
@@ -40,7 +45,15 @@ public class GoldValueAPIHandler {
         return handleHttpResponse(response);
     }
 
-    public List<GoldValue> getLastGoldValues(int topCount) {
+    public List<GoldValue> getLastGoldValues(Integer topCount) {
+        if(topCount == null){
+            throw new DataNotFoundException();
+        }
+
+        if(topCount <= 0){
+            throw new DataNotFoundException();
+        }
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(APIConstants.GOLD_VALUE_API_URL + "last/" + topCount))
                 .GET()
@@ -72,7 +85,7 @@ public class GoldValueAPIHandler {
         } else if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
             throw new DataNotFoundException();
         } else if (response.statusCode() == HttpURLConnection.HTTP_BAD_REQUEST) {
-            throw new DataNotFoundException();
+            throw new ExceededResultsLimitException();
         } else {
             throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode());
         }
@@ -89,7 +102,7 @@ public class GoldValueAPIHandler {
         } else if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
             throw new DataNotFoundException();
         } else if (response.statusCode() == HttpURLConnection.HTTP_BAD_REQUEST) {
-            throw new DataNotFoundException();
+            throw new ExceededResultsLimitException();
         } else {
             throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode());
         }
