@@ -196,6 +196,9 @@ public class GoldValueAPIHandlerTest {
         @Test
         public void returnsCorrectListOfGoldValues() {
             // Arrange
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
+
             List<GoldValue> expectedGoldValues = Arrays.asList(
                     createGoldValue("2024-02-29", 260.85),
                     createGoldValue("2024-03-01", 262.10),
@@ -215,7 +218,7 @@ public class GoldValueAPIHandlerTest {
             }
 
             // Act
-            List<GoldValue> actualGoldValues = handler.getLastGoldValues(5);
+            List<GoldValue> actualGoldValues = handler.getGoldValuesForDateRange(startDate, endDate);
 
             // Assert
             for (int i = 0; i < expectedGoldValues.size(); i++) {
@@ -233,124 +236,140 @@ public class GoldValueAPIHandlerTest {
         @Test
         public void throwsException() throws Exception {
             // Arrange
-            int topCount = 22;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenThrow(new IOException("Failed to send request"));
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getLastGoldValues(topCount));
+            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
         public void throwsRuntimeException_WhenHttpResponseIs201() throws Exception {
             // Arrange
-            int topCount = 22;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             when(response.statusCode()).thenReturn(201);
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getLastGoldValues(topCount));
+            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
         public void throwsRuntimeException_WhenHttpResponseIs400() throws Exception {
             // Arrange
-            int topCount = 22;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             when(response.statusCode()).thenReturn(400);
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(ExceededResultsLimitException.class, () -> handler.getLastGoldValues(topCount));
+            assertThrows(ExceededResultsLimitException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
         public void throwsRuntimeException_WhenHttpResponseIs404() throws Exception {
             // Arrange
-            int topCount = 22;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             when(response.statusCode()).thenReturn(404);
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(DataNotFoundException.class, () -> handler.getLastGoldValues(topCount));
+            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
         public void throwsRuntimeException_WhenHttpResponseIs408() throws Exception {
             // Arrange
-            int topCount = 22;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             when(response.statusCode()).thenReturn(408);
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getLastGoldValues(topCount));
+            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
         public void throwsRuntimeException_WhenHttpResponseIs500() throws Exception {
             // Arrange
-            int topCount = 22;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             when(response.statusCode()).thenReturn(500);
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getLastGoldValues(topCount));
+            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
         public void throwsRuntimeException_WhenHttpResponseIs503() throws Exception {
             // Arrange
-            int topCount = 22;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             when(response.statusCode()).thenReturn(503);
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getLastGoldValues(topCount));
+            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
         public void throwsRuntimeException_WhenHttpResponseIs504() throws Exception {
             // Arrange
-            int topCount = 22;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             when(response.statusCode()).thenReturn(504);
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getLastGoldValues(topCount));
+            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
         public void throwsRuntimeException_WhenIOExceptionOccurs() throws Exception {
             // Arrange
-            int topCount = 22;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenThrow(IOException.class);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getLastGoldValues(topCount));
+            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
-        public void whenTopCountIsNegativeOrZero() {
+        public void whenStartDateOrEndDateIsEmpty() {
             // Arrange
-            int topCountNegative = -1;
-            int topCountZero = 0;
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
 
             // Act and Assert
-            assertThrows(DataNotFoundException.class, () -> handler.getLastGoldValues(topCountNegative));
-            assertThrows(DataNotFoundException.class, () -> handler.getLastGoldValues(topCountZero));
+            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(startDate, ""));
+            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange("", endDate));
+            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange("", ""));
         }
 
         @Test
-        public void whenTopCountIs0() {
-            // Arrange, Act and Assert
-            assertThrows(DataNotFoundException.class, () -> handler.getLastGoldValues(null));
+        public void whenStartDateOrEndDateIsNull() {
+            // Arrange
+            String startDate = "2024-03-01";
+            String endDate = "2024-03-07";
+
+            // Act and Assert
+            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(startDate, null));
+            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(null, endDate));
+            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(null, null));
         }
     }
 

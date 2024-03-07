@@ -45,17 +45,17 @@ public class GoldValueAPIHandler {
         return handleHttpResponse(response);
     }
 
-    public List<GoldValue> getLastGoldValues(Integer topCount) {
-        if(topCount == null){
+    public List<GoldValue> getGoldValuesForDateRange(String startDate, String endDate) {
+        if(startDate == null || endDate == null){
             throw new DataNotFoundException();
         }
 
-        if(topCount <= 0){
+        if(startDate.isEmpty() || endDate.isEmpty()){
             throw new DataNotFoundException();
         }
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(APIConstants.GOLD_VALUE_API_URL + "last/" + topCount))
+                .uri(URI.create(APIConstants.GOLD_VALUE_API_URL + startDate + "/" + endDate))
                 .GET()
                 .build();
 
