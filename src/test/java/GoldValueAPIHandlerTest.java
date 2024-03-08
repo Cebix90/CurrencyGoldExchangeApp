@@ -34,7 +34,7 @@ public class GoldValueAPIHandlerTest {
     private HttpResponse<String> response;
 
     @InjectMocks
-    private GoldValueAPIHandler handler;
+    private GoldValueAPIHandler goldValueAPIHandler;
 
     @Nested
     class TestGetGoldValueForSpecificDate {
@@ -57,7 +57,7 @@ public class GoldValueAPIHandlerTest {
             }
 
             // Act
-            GoldValue actualGoldValue = handler.getGoldValueForSpecificDate(date);
+            GoldValue actualGoldValue = goldValueAPIHandler.getGoldValueForSpecificDate(date);
 
             // Assert
             assertEquals(expectedGoldValue.getValue(), actualGoldValue.getValue());
@@ -77,7 +77,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenThrow(new IOException("Failed to send request"));
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
@@ -89,7 +89,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
@@ -101,7 +101,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(ExceededResultsLimitException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(ExceededResultsLimitException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
@@ -113,7 +113,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(DataNotFoundException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(DataNotFoundException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
@@ -125,7 +125,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
@@ -137,7 +137,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
@@ -149,7 +149,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
@@ -161,7 +161,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
@@ -172,7 +172,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenThrow(IOException.class);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
@@ -181,13 +181,13 @@ public class GoldValueAPIHandlerTest {
             String date = "";
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValueForSpecificDate(date));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test
         public void whenDateIsNull() {
             // Arrange, Act and Assert
-            assertThrows(DataNotFoundException.class, () -> handler.getGoldValueForSpecificDate(null));
+            assertThrows(DataNotFoundException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(null));
         }
     }
 
@@ -218,7 +218,7 @@ public class GoldValueAPIHandlerTest {
             }
 
             // Act
-            List<GoldValue> actualGoldValues = handler.getGoldValuesForDateRange(startDate, endDate);
+            List<GoldValue> actualGoldValues = goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate);
 
             // Assert
             for (int i = 0; i < expectedGoldValues.size(); i++) {
@@ -242,7 +242,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenThrow(new IOException("Failed to send request"));
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
@@ -255,7 +255,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
@@ -268,7 +268,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(ExceededResultsLimitException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
+            assertThrows(ExceededResultsLimitException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
@@ -281,7 +281,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
+            assertThrows(DataNotFoundException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
@@ -294,7 +294,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
@@ -307,7 +307,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
@@ -320,7 +320,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
@@ -333,7 +333,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
@@ -345,7 +345,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenThrow(IOException.class);
 
             // Act and Assert
-            assertThrows(RuntimeException.class, () -> handler.getGoldValuesForDateRange(startDate, endDate));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate));
         }
 
         @Test
@@ -355,9 +355,9 @@ public class GoldValueAPIHandlerTest {
             String endDate = "2024-03-07";
 
             // Act and Assert
-            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(startDate, ""));
-            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange("", endDate));
-            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange("", ""));
+            assertThrows(DataNotFoundException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, ""));
+            assertThrows(DataNotFoundException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange("", endDate));
+            assertThrows(DataNotFoundException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange("", ""));
         }
 
         @Test
@@ -367,9 +367,9 @@ public class GoldValueAPIHandlerTest {
             String endDate = "2024-03-07";
 
             // Act and Assert
-            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(startDate, null));
-            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(null, endDate));
-            assertThrows(DataNotFoundException.class, () -> handler.getGoldValuesForDateRange(null, null));
+            assertThrows(DataNotFoundException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(startDate, null));
+            assertThrows(DataNotFoundException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(null, endDate));
+            assertThrows(DataNotFoundException.class, () -> goldValueAPIHandler.getGoldValuesForDateRange(null, null));
         }
     }
 
