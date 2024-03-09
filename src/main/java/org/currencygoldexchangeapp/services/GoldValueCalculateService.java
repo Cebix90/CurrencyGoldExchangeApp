@@ -2,6 +2,7 @@ package org.currencygoldexchangeapp.services;
 
 import org.currencygoldexchangeapp.constants.ListOfHolidays;
 import org.currencygoldexchangeapp.datamodels.GoldValue;
+import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
 import org.currencygoldexchangeapp.handlers.GoldValueAPIHandler;
 
 import java.math.BigDecimal;
@@ -22,36 +23,39 @@ public class GoldValueCalculateService {
         this.listOfHolidays = new ListOfHolidays(LocalDate.now().getYear());
     }
 
-    public BigDecimal calculateGainOrLoss(String startDate, String endDate) {
-        List<GoldValue> goldValueList = goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate);
+    public Optional<BigDecimal> calculateGainOrLoss(String startDate, String endDate) {
+        try {
+            List<GoldValue> goldValueList = goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate);
 
-        Optional<BigDecimal> currentPriceOptional = goldValueList.stream()
-                .map(goldValue -> BigDecimal.valueOf(goldValue.getValue()))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
-                    Collections.reverse(list);
-                    return list.stream().findFirst();
-                }));
+            Optional<BigDecimal> currentPriceOptional = goldValueList.stream()
+                    .map(goldValue -> BigDecimal.valueOf(goldValue.getValue()))
+                    .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
+                        Collections.reverse(list);
+                        return list.stream().findFirst();
+                    }));
 
-        if (currentPriceOptional.isEmpty()) {
-            throw new RuntimeException("No gold value found for the end date.");
+            if (currentPriceOptional.isEmpty()) {
+                throw new RuntimeException("No gold value found for the end date.");
+            }
+
+            BigDecimal currentPrice = currentPriceOptional.get();
+
+            LocalDate currentDate = LocalDate.parse(endDate);
+
+            BigDecimal bestPrice;
+
+            if(isHoliday(currentDate)) {
+                bestPrice = calculateBestPriceForWeekendDay(goldValueList);
+            } else if (currentDate.getDayOfWeek() == DayOfWeek.SATURDAY || currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                bestPrice = calculateBestPriceForWeekendDay(goldValueList);
+            } else {
+                bestPrice = calculateBestPriceForWorkingDay(goldValueList);
+            }
+
+            return Optional.of(currentPrice.subtract(bestPrice));
+        } catch (DataNotFoundException e) {
+            return Optional.empty();
         }
-
-        BigDecimal currentPrice = currentPriceOptional.get();
-
-        LocalDate currentDate = LocalDate.parse(endDate);
-
-        BigDecimal bestPrice;
-        if(isHoliday(currentDate)) {
-            System.out.println("Today is a holiday, the gold price is equal to the price from last working day.");
-            bestPrice = calculateBestPriceForWeekendDay(goldValueList);
-        } else if (currentDate.getDayOfWeek() == DayOfWeek.SATURDAY || currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            System.out.println("Today is the weekend, the gold price is equal to the price from last Friday.");
-            bestPrice = calculateBestPriceForWeekendDay(goldValueList);
-        } else {
-            bestPrice = calculateBestPriceForWorkingDay(goldValueList);
-        }
-
-        return currentPrice.subtract(bestPrice);
     }
 
     private BigDecimal calculateBestPriceForWorkingDay(List<GoldValue> goldValueList) {

@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -41,10 +42,15 @@ public class GoldValueCalculateServiceTest {
         goldValueCalculateService = new GoldValueCalculateService(goldValueAPIHandler);
 
         // Act
-        BigDecimal result = goldValueCalculateService.calculateGainOrLoss(startDate, endDate);
+        Optional<BigDecimal> result = goldValueCalculateService.calculateGainOrLoss(startDate, endDate);
+
+        BigDecimal resultBigDecimal = BigDecimal.valueOf(0.00);
+        if(result.isPresent()) {
+            resultBigDecimal = result.get();
+        }
 
         // Assert
-        assertEquals(expectedGainOrLoss, result);
+        assertEquals(expectedGainOrLoss, resultBigDecimal);
     }
 
     @Test
@@ -69,10 +75,15 @@ public class GoldValueCalculateServiceTest {
         goldValueCalculateService = new GoldValueCalculateService(goldValueAPIHandler);
 
         // Act
-        BigDecimal result = goldValueCalculateService.calculateGainOrLoss(startDate, endDate);
+        Optional<BigDecimal> result = goldValueCalculateService.calculateGainOrLoss(startDate, endDate);
+
+        BigDecimal resultBigDecimal = BigDecimal.valueOf(0.00);
+        if(result.isPresent()) {
+            resultBigDecimal = result.get();
+        }
 
         // Assert
-        assertEquals(expectedGainOrLoss, result);
+        assertEquals(expectedGainOrLoss, resultBigDecimal);
     }
 
     @Test
@@ -94,10 +105,15 @@ public class GoldValueCalculateServiceTest {
         goldValueCalculateService = new GoldValueCalculateService(goldValueAPIHandler);
 
         // Act
-        BigDecimal result = goldValueCalculateService.calculateGainOrLoss(startDate, endDate);
+        Optional<BigDecimal> result = goldValueCalculateService.calculateGainOrLoss(startDate, endDate);
+
+        BigDecimal resultBigDecimal = BigDecimal.valueOf(0.00);
+        if(result.isPresent()) {
+            resultBigDecimal = result.get();
+        }
 
         // Assert
-        assertEquals(expectedGainOrLoss, result);
+        assertEquals(expectedGainOrLoss, resultBigDecimal);
     }
 
     private GoldValue createGoldValue(String effectiveDate, double value) {
