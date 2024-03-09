@@ -1,4 +1,5 @@
 import org.currencygoldexchangeapp.datamodels.GoldValue;
+import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
 import org.currencygoldexchangeapp.handlers.GoldValueAPIHandler;
 import org.currencygoldexchangeapp.services.GoldValueCalculateService;
 import org.junit.jupiter.api.Test;
@@ -9,10 +10,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -114,6 +117,59 @@ public class GoldValueCalculateServiceTest {
 
         // Assert
         assertEquals(expectedGainOrLoss, resultBigDecimal);
+    }
+
+    @Test
+    public void testCalculateGainOrLoss_EmptyGoldValues() {
+        // Arrange
+        String startDate = "2024-02-29";
+        String endDate = "2024-03-06";
+
+        when(goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate)).thenReturn(Collections.emptyList());
+
+        // Act
+        Optional<BigDecimal> result = goldValueCalculateService.calculateGainOrLoss(startDate, endDate);
+
+        // Assert
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void testCalculateGainOrLoss_SingleGoldValue() {
+        // Arrange
+        String startDate = "2024-02-29";
+        String endDate = "2024-03-06";
+        BigDecimal expectedGainOrLoss = new BigDecimal("0.00");
+
+        List<GoldValue> mockGoldValues = Collections.singletonList(createGoldValue("2024-02-29", 260.85));
+
+        when(goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate)).thenReturn(mockGoldValues);
+
+        // Act
+        Optional<BigDecimal> result = goldValueCalculateService.calculateGainOrLoss(startDate, endDate);
+
+        BigDecimal resultBigDecimal = BigDecimal.valueOf(0.00);
+        if(result.isPresent()) {
+            resultBigDecimal = result.get();
+        }
+
+        // Assert
+        assertEquals(expectedGainOrLoss, resultBigDecimal);
+    }
+
+    @Test
+    public void testCalculateGainOrLoss_DataNotFoundException() {
+        // Arrange
+        String startDate = "2024-02-29";
+        String endDate = "2024-03-06";
+
+        when(goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate)).thenThrow(DataNotFoundException.class);
+
+        // Act
+        Optional<BigDecimal> result = goldValueCalculateService.calculateGainOrLoss(startDate, endDate);
+
+        // Assert
+        assertFalse(result.isPresent());
     }
 
     private GoldValue createGoldValue(String effectiveDate, double value) {

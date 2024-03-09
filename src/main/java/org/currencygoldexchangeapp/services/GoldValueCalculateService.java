@@ -27,6 +27,10 @@ public class GoldValueCalculateService {
         try {
             List<GoldValue> goldValueList = goldValueAPIHandler.getGoldValuesForDateRange(startDate, endDate);
 
+            if (goldValueList.isEmpty()) {
+                return Optional.empty();
+            }
+
             Optional<BigDecimal> currentPriceOptional = goldValueList.stream()
                     .map(goldValue -> BigDecimal.valueOf(goldValue.getValue()))
                     .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
@@ -44,9 +48,7 @@ public class GoldValueCalculateService {
 
             BigDecimal bestPrice;
 
-            if(isHoliday(currentDate)) {
-                bestPrice = calculateBestPriceForWeekendDay(goldValueList);
-            } else if (currentDate.getDayOfWeek() == DayOfWeek.SATURDAY || currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            if(isHoliday(currentDate) || currentDate.getDayOfWeek() == DayOfWeek.SATURDAY || currentDate.getDayOfWeek() == DayOfWeek.SUNDAY || goldValueList.size() == 1) {
                 bestPrice = calculateBestPriceForWeekendDay(goldValueList);
             } else {
                 bestPrice = calculateBestPriceForWorkingDay(goldValueList);
