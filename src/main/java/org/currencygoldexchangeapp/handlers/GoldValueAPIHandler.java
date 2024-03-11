@@ -3,6 +3,7 @@ package org.currencygoldexchangeapp.handlers;
 import org.currencygoldexchangeapp.constants.APIConstants;
 import org.currencygoldexchangeapp.datamodels.GoldValue;
 import org.currencygoldexchangeapp.exceptions.DataNotFoundException;
+import org.currencygoldexchangeapp.exceptions.ExceededResultsLimitException;
 import org.currencygoldexchangeapp.utils.JSONMapper;
 
 import java.io.IOException;
@@ -26,6 +27,10 @@ public class GoldValueAPIHandler {
     }
 
     public GoldValue getGoldValueForSpecificDate(String date) {
+        if(date == null){
+            throw new DataNotFoundException();
+        }
+
         if (date.isEmpty()) {
             date = LocalDate.now().toString();
         }
@@ -38,6 +43,25 @@ public class GoldValueAPIHandler {
         HttpResponse<String> response = getHttpResponse(request);
 
         return handleHttpResponse(response);
+    }
+
+    public List<GoldValue> getGoldValuesForDateRange(String startDate, String endDate) {
+        if(startDate == null || endDate == null){
+            throw new DataNotFoundException();
+        }
+
+        if(startDate.isEmpty() || endDate.isEmpty()){
+            throw new DataNotFoundException();
+        }
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(APIConstants.GOLD_VALUE_API_URL + startDate + "/" + endDate))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = getHttpResponse(request);
+
+        return handleHttpResponseForList(response);
     }
 
     private HttpResponse<String> getHttpResponse(HttpRequest request) {
@@ -61,7 +85,24 @@ public class GoldValueAPIHandler {
         } else if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
             throw new DataNotFoundException();
         } else {
-            throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode());
+            throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode() + ", message: " + response.statusCode());
+        }
+    }
+
+    private List<GoldValue> handleHttpResponseForList(HttpResponse<String> response) {
+        if (response.statusCode() == HttpURLConnection.HTTP_OK) {
+            List<GoldValue> goldValues = jsonMapper.deserializeJsonToGoldValueList(response.body());
+            if (!goldValues.isEmpty()) {
+                return goldValues;
+            } else {
+                throw new RuntimeException("No gold value data found in the response.");
+            }
+        } else if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+            throw new DataNotFoundException();
+        } else if (response.statusCode() == HttpURLConnection.HTTP_BAD_REQUEST) {
+            throw new ExceededResultsLimitException();
+        } else {
+            throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode() + ", message: " + response.statusCode());
         }
     }
 }
