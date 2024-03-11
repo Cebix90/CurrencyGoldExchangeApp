@@ -77,6 +77,6 @@ public class GoldValueCalculateService {
     }
 
     private boolean isHoliday(LocalDate date) {
-        return listOfHolidays.contains(date);
+        return listOfHolidays.containsDate(date);
     }
 }
