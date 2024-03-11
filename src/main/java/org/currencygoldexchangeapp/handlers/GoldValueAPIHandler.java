@@ -84,10 +84,8 @@ public class GoldValueAPIHandler {
             }
         } else if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
             throw new DataNotFoundException();
-        } else if (response.statusCode() == HttpURLConnection.HTTP_BAD_REQUEST) {
-            throw new ExceededResultsLimitException();
         } else {
-            throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode());
+            throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode() + ", message: " + response.statusCode());
         }
     }
 
@@ -104,7 +102,7 @@ public class GoldValueAPIHandler {
         } else if (response.statusCode() == HttpURLConnection.HTTP_BAD_REQUEST) {
             throw new ExceededResultsLimitException();
         } else {
-            throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode());
+            throw new RuntimeException("Failed to fetch post. HTTP status code: " + response.statusCode() + ", message: " + response.statusCode());
         }
     }
 }

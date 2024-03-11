@@ -101,7 +101,7 @@ public class GoldValueAPIHandlerTest {
             when(client.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(response);
 
             // Act and Assert
-            assertThrows(ExceededResultsLimitException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
+            assertThrows(RuntimeException.class, () -> goldValueAPIHandler.getGoldValueForSpecificDate(date));
         }
 
         @Test

@@ -7,7 +7,6 @@ import java.util.List;
 public class ListOfHolidays {
     private final List<LocalDate> holidays;
 
-
     public ListOfHolidays(int year) {
         this.holidays = Arrays.asList(
                 LocalDate.of(year, 1, 1),
@@ -26,7 +25,7 @@ public class ListOfHolidays {
         );
     }
 
-    public boolean containsDate(LocalDate date) {
+    public boolean isHoliday(LocalDate date) {
         return holidays.contains(date);
     }
 

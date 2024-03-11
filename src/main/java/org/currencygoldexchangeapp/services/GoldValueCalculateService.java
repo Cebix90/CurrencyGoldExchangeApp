@@ -48,7 +48,7 @@ public class GoldValueCalculateService {
 
             BigDecimal bestPrice;
 
-            if(isHoliday(currentDate) || currentDate.getDayOfWeek() == DayOfWeek.SATURDAY || currentDate.getDayOfWeek() == DayOfWeek.SUNDAY || goldValueList.size() == 1) {
+            if(listOfHolidays.isHoliday(currentDate) || currentDate.getDayOfWeek() == DayOfWeek.SATURDAY || currentDate.getDayOfWeek() == DayOfWeek.SUNDAY || goldValueList.size() == 1) {
                 bestPrice = calculateBestPriceForWeekendDay(goldValueList);
             } else {
                 bestPrice = calculateBestPriceForWorkingDay(goldValueList);
@@ -74,9 +74,5 @@ public class GoldValueCalculateService {
                 .max(Comparator.comparing(GoldValue::getValue))
                 .map(goldValue -> BigDecimal.valueOf(goldValue.getValue()))
                 .orElseThrow(() -> new RuntimeException("No gold value data found in the response."));
-    }
-
-    private boolean isHoliday(LocalDate date) {
-        return listOfHolidays.containsDate(date);
     }
 }
