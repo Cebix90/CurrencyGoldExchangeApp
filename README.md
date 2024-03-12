@@ -5,7 +5,6 @@
 2. Application Features
 3. How to Run the Application
 4. Testing
-5. License
 
 ## Project Description
 CurrencyGoldExchangeApp is a Java application for managing information related to currency exchange rates and gold prices. The project includes various features, such as retrieving current currency exchange rates, calculating currency values, analyzing gold prices, and saving transaction information.
