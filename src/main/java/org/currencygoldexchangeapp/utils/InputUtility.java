@@ -17,7 +17,7 @@ public class InputUtility {
             if ("PLN".equalsIgnoreCase(currencyCode) && !isSourceCurrency) {
                 return currencyCode;
             }
-        } while ((!currencyCode.isEmpty() && !InputUtility.isCurrencyAvailable(currencyCode, date)) || (isSourceCurrency && currencyCode.isEmpty()));
+        } while ((!currencyCode.isEmpty() && !isCurrencyAvailable(currencyCode, date)) || (isSourceCurrency && currencyCode.isEmpty()));
         return currencyCode;
     }
 
@@ -43,12 +43,12 @@ public class InputUtility {
                 .contains(currency.toLowerCase());
     }
 
-    public static LocalDate getDateForCurrencies(Scanner scanner) {
+    private static LocalDate getDate(Scanner scanner, LocalDate minDate) {
         LocalDate date = null;
         LocalDate today = LocalDate.now();
 
         while (date == null) {
-            System.out.print("Please enter a date within the range from 2003-01-01 to " + today + " (optional, press ENTER for today's date): ");
+            System.out.print("Please enter a date within the range from " + minDate + " to " + today + " (optional, press ENTER for today's date): ");
             String dateString = scanner.nextLine();
 
             try {
@@ -57,13 +57,11 @@ public class InputUtility {
                 } else {
                     date = LocalDate.parse(dateString);
 
-                    LocalDate minDate = LocalDate.of(2003, 1, 2);
-
                     if (date.isAfter(today)) {
-                        System.out.println("Entered date is greater than today's date. Please enter a date within the range from 2003-01-02 to " + today + ".");
+                        System.out.println("Entered date is greater than today's date. Please enter a date within the range from " + minDate + " to " + today + ".");
                         date = null;
                     } else if (date.isBefore(minDate)) {
-                        System.out.println("Entered date is earlier than the supported date range. Please enter a date within the range from 2003-01-02 to " + today + ".");
+                        System.out.println("Entered date is earlier than the supported date range. Please enter a date within the range from " + minDate + " to " + today + ".");
                         date = null;
                     }
                 }
@@ -74,35 +72,12 @@ public class InputUtility {
         return date;
     }
 
+    public static LocalDate getDateForCurrencies(Scanner scanner) {
+        return getDate(scanner, LocalDate.of(2003, 1, 2));
+    }
+
     public static LocalDate getDateForGold(Scanner scanner) {
-        LocalDate date = null;
-        LocalDate today = LocalDate.now();
-
-        while (date == null) {
-            System.out.print("Please enter a date within the range from 2013-01-02 to " + today + " (optional, press ENTER for today's date): ");
-            String dateString = scanner.nextLine();
-
-            try {
-                if (dateString.isEmpty()) {
-                    date = LocalDate.now();
-                } else {
-                    date = LocalDate.parse(dateString);
-
-                    LocalDate minDate = LocalDate.of(2013, 1, 2);
-
-                    if (date.isAfter(today)) {
-                        System.out.println("Entered date is greater than today's date. Please enter a date within the range from 2013-01-02 to " + today + ".");
-                        date = null;
-                    } else if (date.isBefore(minDate)) {
-                        System.out.println("Entered date is earlier than the supported date range. Please enter a date within the range from 2013-01-02 to " + today + ".");
-                        date = null;
-                    }
-                }
-            } catch (DateTimeParseException e) {
-                System.out.println("Invalid date format. Please enter a valid date in the format yyyy-MM-dd");
-            }
-        }
-        return date;
+        return getDate(scanner, LocalDate.of(2013, 1, 2));
     }
 
     public static double getCustomAmount(Scanner scanner) {
