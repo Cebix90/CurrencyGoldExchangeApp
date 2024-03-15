@@ -29,15 +29,23 @@ public class UserMenuService {
     private final GoldValueCalculateService goldValueCalculateService;
 
     public UserMenuService() {
-        ExchangeRateAPIHandler exchangeRateAPIHandler = new ExchangeRateAPIHandler(HttpClient.newHttpClient());
+        HttpClient httpClient = HttpClient.newHttpClient();
+        ExchangeRateAPIHandler exchangeRateAPIHandler = new ExchangeRateAPIHandler(httpClient);
         this.currencyExchangeCalculateService = new CurrencyExchangeCalculateService(exchangeRateAPIHandler);
         this.exchangeRateFileReaderHandler = new ExchangeRateFileReaderHandler(currencyExchangeCalculateService);
         this.exchangeRateFileSaverHandler = new ExchangeRateFileSaverHandler();
-        this.goldValueAPIHandler = new GoldValueAPIHandler(HttpClient.newHttpClient());
+        this.goldValueAPIHandler = new GoldValueAPIHandler(httpClient);
         this.goldValueCalculateService = new GoldValueCalculateService(goldValueAPIHandler);
     }
 
     public void runApplication() {
+        System.out.println("\u001B[32m" + "Welcome to the Currency Exchange and Gold Price Application!");
+        System.out.println("In our application, you can:");
+        System.out.println("- Check currency exchange rates for a specific date and save results for later.");
+        System.out.println("- Load data from a file and calculate currency exchange rates.");
+        System.out.println("- Check the price of gold for a specific date.");
+        System.out.println("- Compare today's gold price with the best price from the last month/year." + "\u001B[0m");
+
         int choice = 0;
         while (choice != 5) {
             System.out.println();
@@ -49,21 +57,22 @@ public class UserMenuService {
     }
 
     private void displayMenu() {
+        System.out.println("\u001B[1m" + "Menu:");
         System.out.println("1. Currency exchange prices for a specific date.");
         System.out.println("2. Load data from a file and calculate currency exchange prices.");
         System.out.println("3. Gold price for a specific date.");
         System.out.println("4. Compare today's gold price with the best price from the last month/year.");
         System.out.println("5. Close the application");
+        System.out.print("Please enter your choice with a number 1-5: " + "\u001B[0m");
     }
 
     private int getUserChoice() {
-        System.out.print("Please enter your choice: ");
         String input = scanner.nextLine();
         try {
             return Integer.parseInt(input);
         } catch (NumberFormatException e) {
-            System.out.println("Conversion error: " + e.getMessage());
-            return  -1;
+            System.out.println("Please choose number 1-5 from the menu above.");
+            return -1;
         }
     }
 
@@ -93,7 +102,7 @@ public class UserMenuService {
         LocalDate date = InputUtility.getDateForCurrencies(scanner);
         String sourceCurrencyCode = InputUtility.getUserInputForCurrency(scanner, "Enter source currency code: ", date.toString(), true);
         String targetCurrencyCode = InputUtility.getUserInputForCurrency(scanner, "Enter target currency code (press ENTER for PLN currency): ", date.toString(), false);
-        if(targetCurrencyCode.isEmpty()) {
+        if (targetCurrencyCode.isEmpty()) {
             targetCurrencyCode = "PLN";
         }
         double amount = InputUtility.getCustomAmount(scanner);
@@ -162,13 +171,13 @@ public class UserMenuService {
         Optional<BigDecimal> gainOrLossMonthly = goldValueCalculateService.calculateGainOrLoss(startDateMonthly, endDate);
         Optional<BigDecimal> gainOrLossYearly = goldValueCalculateService.calculateGainOrLoss(startDateYearly, endDate);
 
-        if(gainOrLossMonthly.isPresent()) {
+        if (gainOrLossMonthly.isPresent()) {
             System.out.println("Today's gold price compared to the best price this month: " + gainOrLossMonthly.get() + " PLN");
         } else {
             System.out.println("No results for this date range. No comparison for monthly results.");
         }
 
-        if(gainOrLossYearly.isPresent()) {
+        if (gainOrLossYearly.isPresent()) {
             System.out.println("Today's gold price compared to the best price this year: " + gainOrLossYearly.get() + " PLN");
         } else {
             System.out.println("No results for this date range. No comparison for yearly results.");
