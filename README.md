@@ -39,8 +39,3 @@ To run the application, follow these steps:
 
 ## Testing
 The project includes a set of unit tests that can be run to verify the correctness of various functions. To run the tests, use the tools available in the development environment.
-
-## Project structure main
-![project structure main](readmePictures/projectStructureMainImg.png)
-## Project structure test
-![project structure test](readmePictures/projectStructureTestImg.png)
